@@ -3,4 +3,8 @@ public abstract class APIHeader {
     protected String requestType;
 
     public abstract void buildResponse();
+
+    public String getRequestType() {
+        return requestType;
+    }
 }

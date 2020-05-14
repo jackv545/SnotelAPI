@@ -5,9 +5,6 @@ import spark.Request;
 import spark.Response;
 import spark.Spark;
 
-import java.io.File;
-import java.util.Scanner;
-
 public class MicroServer {
     private final Logger log = LoggerFactory.getLogger(MicroServer.class);
 
@@ -31,34 +28,25 @@ public class MicroServer {
     }
 
     private String processConfigRequest(Request request, Response response) {
-        log.info("Config request: {}", HTTPrequestToJson(request));
+        return processGetRequest(new Config(), request, response);
+    }
+
+    private String processStationsRequest(Request request, Response response) {
+        return processGetRequest(new Stations(), request, response);
+    }
+
+    private String processGetRequest(APIHeader requestType, Request request, Response response) {
+        log.info("{} request: {}", requestType.getRequestType(), HTTPrequestToJson(request));
         response.type("application/json");
         response.header("Access-Control-Allow-Origin", "*");
         response.status(200);
 
         try {
             Gson jsonConverter = new Gson();
-            Config apiRequest = new Config();
+            APIHeader apiRequest = requestType;
             apiRequest.buildResponse();
             String responseBody = jsonConverter.toJson(apiRequest);
-            log.trace("Config response: {}", responseBody);
-            return responseBody;
-        } catch (Exception e) {
-            log.error("Exception: {}", e);
-            response.status(500);
-            return request.body();
-        }
-    }
-
-    private String processStationsRequest(Request request, Response response) {
-        log.info("Stations request: {}", HTTPrequestToJson(request));
-        response.type("application/json");
-        response.header("Access-Control-Allow-Origin", "*");
-        response.status(200);
-
-        try {
-            String responseBody = new Scanner(new File("stations.json")).useDelimiter("\\Z").next();
-            log.trace("Stations response: {}", responseBody);
+            log.trace("{} response: {}", requestType.getRequestType(), responseBody);
             return responseBody;
         } catch (Exception e) {
             log.error("Exception: {}", e);
