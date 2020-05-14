@@ -1,1 +1,0 @@
-web: java -jar out/artifacts/Snotel_jar/Snotel.jar
