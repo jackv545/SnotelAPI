@@ -84,6 +84,7 @@
                     <version>3.0.2</version>
                     <configuration>
                         <jdkVersion>1.8</jdkVersion>
+                        <appName>snotel-api</appName>
                         <processTypes>
                             <!-- Tell Heroku how to launch your application -->
                             <web>java $JAVA_OPTS -cp target/classes:target/dependency/* WebApplication</web>
