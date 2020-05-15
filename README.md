@@ -8,16 +8,6 @@ Web dashboard for retrieving US National Water and Climate Center snow telemetry
 * [Spark Java](http://sparkjava.com/)
 * [NWCC Report Generator](https://wcc.sc.egov.usda.gov/reportGenerator/)
 * [Heroku Postgres](https://www.heroku.com/postgres)
-
 * [ReactJS](https://reactjs.org/)
 * [Material-UI](https://material-ui.com/)
 * [React-Leaflet](https://react-leaflet.js.org/)
-
-## Build Script
-
-In the snotel-client directory, you can run:
-
-### `npm start`
-
-Runs the app in the development mode.<br />
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
