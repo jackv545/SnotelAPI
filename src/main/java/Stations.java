@@ -2,9 +2,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -13,13 +11,16 @@ import java.sql.*;
 public class Stations extends APIHeader {
     private final transient Logger log = LoggerFactory.getLogger(Stations.class);
 
-    private List<Map<String, String>> stations;
+    private List<Station> stations;
     private int limit;
+    private String searchField, searchTerm;
 
     public Stations() {
         this.requestType = "stations";
         this.requestVersion = 1;
-        this.limit = 10;
+        this.limit = 867;
+        this.searchField = "name";
+        this.searchTerm = "";
     }
 
     private static Connection getConnection() throws URISyntaxException, SQLException {
@@ -31,25 +32,44 @@ public class Stations extends APIHeader {
         return DriverManager.getConnection(dbUrl, username, password);
     }
 
+    private String queryString() {
+        String select = "SELECT * FROM stations WHERE ";
+        String like, column;
+        switch (searchField) {
+            case "name":
+                like = " ILIKE '" + searchTerm + "%'";
+                column = "name";
+                break;
+            case "state":
+                like = " ILIKE '%:" + searchTerm + ":%'";
+                column="triplet";
+                break;
+            default:
+                throw new IllegalStateException("Unexpected value: " + searchField);
+        }
+        String query = select + column + like + " LIMIT " + limit;
+        log.info("SQL Query: {}", query);
+        return query;
+    }
+
     @Override
     public void buildResponse() {
         stations = new ArrayList<>();
         try (
                 Connection conn = getConnection();
-                Statement stQuery = conn.createStatement();
-                ResultSet rsQuery = stQuery.executeQuery("SELECT * FROM stations LIMIT 10");
+                Statement st = conn.createStatement();
+                ResultSet rs = st.executeQuery(queryString());
         ) {
-            while(rsQuery.next()) {
-                Map<String, String> station = new HashMap<>();
-
-                station.put("elevation", rsQuery.getString(1));
-                station.put("lat", rsQuery.getString(2));
-                station.put("lng", rsQuery.getString(3));
-                station.put("name", rsQuery.getString(4));
-                station.put("timezone", rsQuery.getString(5));
-                station.put("triplet", rsQuery.getString(6));
-                station.put("wind", rsQuery.getString(7));
-
+            while(rs.next()) {
+                Station station = new Station(
+                        rs.getInt("elevation"),
+                        rs.getDouble("lat"),
+                        rs.getDouble("lng"),
+                        rs.getString("name"),
+                        rs.getInt("timezone"),
+                        rs.getString("triplet"),
+                        rs.getBoolean("wind")
+                );
                 stations.add(station);
             }
         } catch (Exception e) {

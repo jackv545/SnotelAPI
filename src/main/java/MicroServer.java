@@ -5,6 +5,8 @@ import spark.Request;
 import spark.Response;
 import spark.Spark;
 
+import java.lang.reflect.Type;
+
 public class MicroServer {
     private final Logger log = LoggerFactory.getLogger(MicroServer.class);
 
@@ -23,8 +25,9 @@ public class MicroServer {
     }
 
     private void processRestfulAPIrequests() {
+        Spark.get("/", this::processConfigRequest);
         Spark.get("api/config", this::processConfigRequest);
-        Spark.get("api/stations", this::processStationsRequest);
+        Spark.post("api/stations", this::processStationsRequest);
     }
 
     private String processConfigRequest(Request request, Response response) {
@@ -32,7 +35,7 @@ public class MicroServer {
     }
 
     private String processStationsRequest(Request request, Response response) {
-        return processGetRequest(new Stations(), request, response);
+        return processPostRequest(Stations.class, request, response);
     }
 
     private String processGetRequest(APIHeader requestType, Request request, Response response) {
@@ -47,6 +50,26 @@ public class MicroServer {
             apiRequest.buildResponse();
             String responseBody = jsonConverter.toJson(apiRequest);
             log.trace("{} response: {}", requestType.getRequestType(), responseBody);
+            return responseBody;
+        } catch (Exception e) {
+            log.error("Exception: {}", e);
+            response.status(500);
+            return request.body();
+        }
+    }
+
+    private String processPostRequest(Type requestType, Request request, Response response) {
+        log.info("API request: {}", HTTPrequestToJson(request));
+        response.type("application/json");
+        response.header("Access-Control-Allow-Origin", "*");
+        response.status(200);
+
+        try {
+            Gson jsonConverter = new Gson();
+            APIHeader apiRequest = jsonConverter.fromJson(request.body(), requestType);
+            apiRequest.buildResponse();
+            String responseBody = jsonConverter.toJson(apiRequest);
+            log.trace("API response: {}", responseBody);
             return responseBody;
         } catch (Exception e) {
             log.error("Exception: {}", e);
