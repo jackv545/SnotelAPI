@@ -1,13 +1,17 @@
 import React, { useState } from 'react';
 
-import { Container, Tooltip, IconButton, CssBaseline } from '@material-ui/core';
+import { Container, Tooltip, IconButton, CssBaseline, Grid } from '@material-ui/core';
 import { createMuiTheme, ThemeProvider } from '@material-ui/core/styles';
 import { Brightness4, BrightnessHigh } from '@material-ui/icons';
 
+
 import Navigation from './components/Navigation';
+import Menu from './components/Menu';
+import TopSnowPack from './components/TopSnowPack';
 
 function App() {
   const [prefersDarkMode, setPrefersDarkMode] = useState(true);
+  const [selectedStation, setSelectedStation] = useState(null);
 
   const theme = createMuiTheme({
     palette: {
@@ -35,8 +39,19 @@ function App() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline/>
-      <Container maxWidth="md">
-        <Navigation prefersDarkMode={prefersDarkMode} darkModeButton={darkModeButton}/>
+      <Navigation 
+        prefersDarkMode={prefersDarkMode} darkModeButton={darkModeButton}
+        selectedStation={selectedStation} setSelectedStation={setSelectedStation}
+      />
+      <Container maxWidth="lg">
+        <Grid container spacing={2}>
+          <Grid item xs={12} sm={8}>
+            <Menu theme={theme}/>
+          </Grid>
+          <Grid item xs={12} sm={4}>
+            <TopSnowPack theme={theme}/>
+          </Grid>
+        </Grid>
       </Container>
     </ThemeProvider>
   );

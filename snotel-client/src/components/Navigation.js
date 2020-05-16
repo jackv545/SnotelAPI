@@ -23,8 +23,13 @@ export default function Navigation(props) {
         <Autocomplete
             options={stations}
             getOptionLabel={(station) => station.name}
+            value={props.selectedStation}
+            onChange={(event, newValue) => {
+                props.setSelectedStation(newValue)
+            }}
             style={{ width: 300 }}
-            renderInput={(params) => <TextField {...params} color="secondary" label="Search for a Mountain" variant="outlined"/>}
+            renderInput={(params) => <TextField {...params} color="secondary" 
+            placeholder="Search for a Mountain" variant="outlined"/>}
         />
     );
 

@@ -4,6 +4,7 @@
 
 # dependencies
 snotel-client/node_modules
+settings.json
 /.pnp
 .pnp.js
 

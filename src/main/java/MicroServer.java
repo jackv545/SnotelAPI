@@ -28,6 +28,7 @@ public class MicroServer {
         Spark.get("/", this::processConfigRequest);
         Spark.get("api/config", this::processConfigRequest);
         Spark.post("api/stations", this::processStationsRequest);
+        Spark.post("api/snotel", this::processSnotelRequest);
     }
 
     private String processConfigRequest(Request request, Response response) {
@@ -36,6 +37,10 @@ public class MicroServer {
 
     private String processStationsRequest(Request request, Response response) {
         return processPostRequest(Stations.class, request, response);
+    }
+
+    private String processSnotelRequest(Request request, Response response) {
+        return processPostRequest(Snotel.class, request, response);
     }
 
     private String processGetRequest(APIHeader requestType, Request request, Response response) {
