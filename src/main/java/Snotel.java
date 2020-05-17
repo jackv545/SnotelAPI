@@ -16,6 +16,12 @@ public class Snotel extends APIHeader{
 
     }
 
+    public Snotel(String stationTriplet) {
+        this.requestType = "snotel";
+        this.requestVersion = 1;
+        this.stationTriplet = stationTriplet;
+    }
+
     private URL reportURL() {
         try {
             return new URL("https://wcc.sc.egov.usda.gov/reportGenerator/view_csv/"
@@ -62,5 +68,9 @@ public class Snotel extends APIHeader{
         } catch (IOException e) {
             log.error("IOException: {}", e);
         }
+    }
+
+    public int getSnowDepth() {
+        return snowDepth;
     }
 }

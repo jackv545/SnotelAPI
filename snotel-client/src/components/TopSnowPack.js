@@ -24,7 +24,7 @@ export default function TopSnowPack(props) {
     const [topStations, setTopStations] = useState([]);
 
     useEffect(() => {
-        sendServerRequestWithBody('stations', {requestType: 'stations', requestVersion: 1, limit: 5})
+        sendServerRequestWithBody('stations', {requestType: 'stations', requestVersion: 1, limit: 5, orderBySnowdepth: true})
         .then((response => {
             if (response.statusCode >= 200 && response.statusCode <= 299) {
                 setTopStations(response.body.stations)
@@ -41,15 +41,14 @@ export default function TopSnowPack(props) {
                     Top 5 Deepest Snowpack
                 </Typography>
             </Grid>
-            {topStations.map((station) => (station.triplet))
-            .map((text, i) => (
+            {topStations.map((station, i) => (
                 <Grid item key={i} xs={12}>
                     <Button 
                         classes={{label: classes.label, endIcon: classes.endIcon}} color="secondary" 
                         fullWidth={true} variant="contained"  
                         startIcon={<Place/>} endIcon={<ChevronRight/>}
                     >
-                        {text}
+                        {`${station.name} ${station.snowdepth}"`}
                     </Button>
                 </Grid>
             ))}

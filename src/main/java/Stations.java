@@ -14,6 +14,7 @@ public class Stations extends APIHeader {
     private List<Station> stations;
     private int limit;
     private String searchField, searchTerm;
+    private boolean orderBySnowdepth;
 
     public Stations() {
         this.requestType = "stations";
@@ -21,9 +22,10 @@ public class Stations extends APIHeader {
         this.limit = 867;
         this.searchField = "name";
         this.searchTerm = "";
+        orderBySnowdepth = false;
     }
 
-    private static Connection getConnection() throws URISyntaxException, SQLException {
+    public static Connection getConnection() throws URISyntaxException, SQLException {
         URI dbUri = new URI(System.getenv("DATABASE_URL"));
         String username = dbUri.getUserInfo().split(":")[0];
         String password = dbUri.getUserInfo().split(":")[1];
@@ -47,7 +49,11 @@ public class Stations extends APIHeader {
             default:
                 throw new IllegalStateException("Unexpected value: " + searchField);
         }
-        String query = select + column + like + " LIMIT " + limit;
+        String query = select + column + like;
+        if(orderBySnowdepth) {
+            query = query + " ORDER BY Snowdepth DESC";
+        }
+        query = query + " LIMIT " + limit;
         log.info("SQL Query: {}", query);
         return query;
     }
@@ -68,12 +74,17 @@ public class Stations extends APIHeader {
                         rs.getString("name"),
                         rs.getInt("timezone"),
                         rs.getString("triplet"),
-                        rs.getBoolean("wind")
+                        rs.getBoolean("wind"),
+                        rs.getInt("snowdepth")
                 );
                 stations.add(station);
             }
         } catch (Exception e) {
             log.error("Exception: {}", e);
         }
+    }
+
+    public List<Station> getStations() {
+        return stations;
     }
 }
