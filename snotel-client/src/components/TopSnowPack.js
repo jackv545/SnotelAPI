@@ -8,6 +8,7 @@ import { sendServerRequestWithBody } from '../api/restfulAPI';
 
 const useStyles = makeStyles({
     label: {
+        textTransform: 'none',
         justifyContent: 'left'
     },
     endIcon: {
@@ -24,7 +25,7 @@ export default function TopSnowPack(props) {
     const [topStations, setTopStations] = useState([]);
 
     useEffect(() => {
-        sendServerRequestWithBody('stations', {requestType: 'stations', requestVersion: 1, limit: 5, orderBySnowdepth: true})
+        sendServerRequestWithBody({requestType: 'stations', requestVersion: 1, limit: 5, orderBySnowdepth: true})
         .then((response => {
             if (response.statusCode >= 200 && response.statusCode <= 299) {
                 setTopStations(response.body.stations)
@@ -48,7 +49,7 @@ export default function TopSnowPack(props) {
                         fullWidth={true} variant="contained"  
                         startIcon={<Place/>} endIcon={<ChevronRight/>}
                     >
-                        {`${station.name} ${station.snowdepth}"`}
+                        {`${station.name} ${station.state} ${station.snowDepth}"`}
                     </Button>
                 </Grid>
             ))}

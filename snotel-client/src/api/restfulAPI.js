@@ -6,8 +6,8 @@ export function sendServerRequest(requestType) {
     return processRestfulAPI(restfulAPI, requestOptions);
 }
 
-export function sendServerRequestWithBody(requestType, requestBody) {
-    const restfulAPI = `https://snotel-api.herokuapp.com/api/${requestType}`;
+export function sendServerRequestWithBody(requestBody) {
+    const restfulAPI = `https://snotel-api.herokuapp.com/api/${requestBody.requestType}`;
     const requestOptions = {
         method: 'POST',
         body: JSON.stringify(requestBody)

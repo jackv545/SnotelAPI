@@ -9,7 +9,7 @@ export default function Navigation(props) {
     const [stations, setStations] = useState([]);
 
     useEffect(() => {
-        sendServerRequestWithBody('stations', {requestType: 'stations', requestVersion: 1})
+        sendServerRequestWithBody({requestType: 'stations', requestVersion: 1})
         .then((response => {
             if (response.statusCode >= 200 && response.statusCode <= 299) {
                 setStations(response.body.stations)
