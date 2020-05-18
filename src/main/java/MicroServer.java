@@ -29,7 +29,7 @@ public class MicroServer {
         Spark.get("api/config", this::processConfigRequest);
         Spark.post("api/stations", this::processStationsRequest);
         Spark.post("api/snotel", this::processSnotelRequest);
-        Spark.get("api/topSnowpack", this::processDailySnowDepthRequest);
+        Spark.post("api/dailySnowDepth", this::processDailySnowDepthRequest);
     }
 
     private String processConfigRequest(Request request, Response response) {
@@ -45,7 +45,7 @@ public class MicroServer {
     }
 
     private String processDailySnowDepthRequest(Request request, Response response) {
-        return processGetRequest(new DailySnowDepth(), request, response);
+        return processPostRequest(DailySnowDepth.class, request, response);
     }
 
     private String processGetRequest(APIHeader requestType, Request request, Response response) {

@@ -7,29 +7,36 @@ import java.sql.PreparedStatement;
 public class DailySnowDepth extends APIHeader {
     private final transient Logger log = LoggerFactory.getLogger(DailySnowDepth.class);
 
-    public DailySnowDepth() {
+    private String state;
+    private int rowsUpdated;
 
+    public DailySnowDepth() {
+        this.requestVersion = 1;
+        this.requestType = "dailySnowDepth";
     }
 
     @Override
     public void buildResponse() {
+        rowsUpdated = 0;
         String sql = "UPDATE stations SET snowdepth=? WHERE triplet=?";
 
         try (
                 Connection conn = Stations.getConnection();
                 PreparedStatement stmt = conn.prepareStatement(sql);
         ) {
-            Stations stations = new Stations();
+            Stations stations = new Stations("state", state);
             stations.buildResponse();
+
             for(Station station : stations.getStations()) {
                 Snotel snotel = new Snotel(station.getTriplet());
                 snotel.buildResponse();
-                log.trace("{} snow depth: {}", station.getTriplet(), snotel.getSnowDepth());
+                log.trace("{} snowDepth: {}", station.getTriplet(), snotel.getSnowDepth());
 
                 stmt.setInt(1, snotel.getSnowDepth());
                 stmt.setString(2, station.getTriplet());
 
                 stmt.executeUpdate();
+                rowsUpdated++;
             }
         } catch (Exception e) {
             log.error("Exception: {}", e);

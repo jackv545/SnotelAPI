@@ -17,8 +17,8 @@ public class Snotel extends APIHeader{
     }
 
     public Snotel(String stationTriplet) {
-        this.requestType = "snotel";
         this.requestVersion = 1;
+        this.requestType = "snotel";
         this.stationTriplet = stationTriplet;
     }
 
@@ -63,7 +63,7 @@ public class Snotel extends APIHeader{
             if(status > 199 && status < 300) {
                 setParameters(new InputStreamReader(con.getInputStream()));
             } else {
-                log.error("Response code: {}", status);
+                log.error("{}\nResponse code: {}", url, status);
             }
         } catch (IOException e) {
             log.error("IOException: {}", e);

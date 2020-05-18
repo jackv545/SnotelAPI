@@ -17,12 +17,17 @@ public class Stations extends APIHeader {
     private boolean orderBySnowdepth;
 
     public Stations() {
-        this.requestType = "stations";
-        this.requestVersion = 1;
         this.limit = 867;
         this.searchField = "name";
         this.searchTerm = "";
-        orderBySnowdepth = false;
+        this.orderBySnowdepth = false;
+    }
+
+    public Stations(String searchField, String searchTerm) {
+        this.limit = 867;
+        this.searchField = searchField;
+        this.searchTerm = searchTerm;
+        this.orderBySnowdepth = false;
     }
 
     public static Connection getConnection() throws URISyntaxException, SQLException {
@@ -43,15 +48,15 @@ public class Stations extends APIHeader {
                 column = "name";
                 break;
             case "state":
-                like = " ILIKE '%:" + searchTerm + ":%'";
-                column="triplet";
+                like = "='" + searchTerm + "'";
+                column="state";
                 break;
             default:
                 throw new IllegalStateException("Unexpected value: " + searchField);
         }
         String query = select + column + like;
         if(orderBySnowdepth) {
-            query = query + " ORDER BY Snowdepth DESC";
+            query = query + " ORDER BY snowdepth DESC";
         }
         query = query + " LIMIT " + limit;
         log.info("SQL Query: {}", query);
@@ -67,15 +72,11 @@ public class Stations extends APIHeader {
                 ResultSet rs = st.executeQuery(queryString());
         ) {
             while(rs.next()) {
-                Station station = new Station(
-                        rs.getInt("elevation"),
-                        rs.getDouble("lat"),
-                        rs.getDouble("lng"),
-                        rs.getString("name"),
-                        rs.getInt("timezone"),
-                        rs.getString("triplet"),
-                        rs.getBoolean("wind"),
-                        rs.getInt("snowdepth")
+                Station station = new Station(rs.getInt("elevation"),
+                        rs.getDouble("lat"), rs.getDouble("lng"),
+                        rs.getInt("timezone"), rs.getString("triplet"),
+                        rs.getBoolean("wind"), rs.getInt("snowdepth"),
+                        rs.getString("state"), rs.getString("name")
                 );
                 stations.add(station);
             }
