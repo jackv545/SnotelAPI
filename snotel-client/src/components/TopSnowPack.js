@@ -15,7 +15,7 @@ const useStyles = makeStyles({
         marginLeft: 'auto'
     },
     menuText: props => ({
-        marginTop: props.theme.spacing(1)
+        marginTop: props.theme.spacing(3)
     })
 })
 
@@ -48,6 +48,7 @@ export default function TopSnowPack(props) {
                         classes={{label: classes.label, endIcon: classes.endIcon}} color="secondary" 
                         fullWidth={true} variant="contained"  
                         startIcon={<Place/>} endIcon={<ChevronRight/>}
+                        onClick={() => props.setSelectedStation(station)}
                     >
                         {`${station.name} ${station.state} ${station.snowDepth}"`}
                     </Button>

@@ -24,19 +24,19 @@ public class DailySnowDepth extends APIHeader {
                 Connection conn = Stations.getConnection();
                 PreparedStatement stmt = conn.prepareStatement(sql);
         ) {
-            Stations stations = new Stations("state", state);
+            Stations stations = new Stations();
             stations.buildResponse();
 
             for(Station station : stations.getStations()) {
                 Snotel snotel = new Snotel(station.getTriplet());
                 snotel.buildResponse();
-                log.trace("{} snowDepth: {}", station.getTriplet(), snotel.getSnowDepth());
 
                 stmt.setInt(1, snotel.getSnowDepth());
                 stmt.setString(2, station.getTriplet());
 
                 stmt.executeUpdate();
                 rowsUpdated++;
+                log.info("{} snowDepth: {} {}/822", station.getTriplet(), snotel.getSnowDepth(), rowsUpdated);
             }
         } catch (Exception e) {
             log.error("Exception: {}", e);

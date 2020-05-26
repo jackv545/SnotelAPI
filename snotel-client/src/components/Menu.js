@@ -13,7 +13,7 @@ const useStyles = makeStyles({
     marginLeft: 'auto'
   },
   menuText: props => ({
-      marginTop: props.theme.spacing(1)
+      marginTop: props.theme.spacing(3)
   })
 })
 
