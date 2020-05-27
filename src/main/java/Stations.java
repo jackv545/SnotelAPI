@@ -17,17 +17,24 @@ public class Stations extends APIHeader {
     private boolean orderBySnowdepth;
 
     public Stations() {
-        this.limit = 867;
+        this.limit = 822;
         this.searchField = "name";
         this.searchTerm = "";
         this.orderBySnowdepth = false;
     }
 
     public Stations(String searchField, String searchTerm) {
-        this.limit = 867;
+        this.limit = 822;
         this.searchField = searchField;
         this.searchTerm = searchTerm;
         this.orderBySnowdepth = false;
+    }
+
+    public Stations(int limit) {
+        this.limit = limit;
+        this.searchField = "name";
+        this.searchTerm = "";
+        this.orderBySnowdepth = true;
     }
 
     public static Connection getConnection() throws URISyntaxException, SQLException {

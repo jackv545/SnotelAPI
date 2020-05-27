@@ -26,4 +26,8 @@ public class Station {
     public String getState() {
         return state;
     }
+
+    public int getSnowDepth() {
+        return snowDepth;
+    }
 }

@@ -10,4 +10,8 @@ public class Config extends APIHeader {
     public void buildResponse() {
         this.serverName = "Snotel API";
     }
+
+    public String getServerName() {
+        return serverName;
+    }
 }
