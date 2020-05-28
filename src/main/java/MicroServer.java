@@ -6,6 +6,9 @@ import spark.Response;
 import spark.Spark;
 
 import java.lang.reflect.Type;
+import java.net.URISyntaxException;
+import java.sql.SQLException;
+import java.sql.SQLTimeoutException;
 
 public class MicroServer {
     private final Logger log = LoggerFactory.getLogger(MicroServer.class);
@@ -81,6 +84,14 @@ public class MicroServer {
             String responseBody = jsonConverter.toJson(apiRequest);
             log.trace("API response: {}", responseBody);
             return responseBody;
+        } catch(URISyntaxException e){
+            log.error("URISyntaxException: {}", e);
+            response.status(502);
+            return request.body();
+        } catch (SQLException e) {
+            log.error("SQLException: {}", e);
+            response.status(400);
+            return request.body();
         } catch (Exception e) {
             log.error("Exception: {}", e);
             response.status(500);

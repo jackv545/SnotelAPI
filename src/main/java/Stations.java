@@ -46,7 +46,7 @@ public class Stations extends APIHeader {
         return DriverManager.getConnection(dbUrl, username, password);
     }
 
-    private String queryString() {
+    private String queryString() throws SQLException {
         String select = "SELECT * FROM stations WHERE ";
         String like, column;
         switch (searchField) {
@@ -59,7 +59,7 @@ public class Stations extends APIHeader {
                 column="state";
                 break;
             default:
-                throw new IllegalStateException("Unexpected value: " + searchField);
+                throw new SQLException("Column " + searchField + " does not exist");
         }
         String query = select + column + like;
         if(orderBySnowdepth) {
@@ -71,7 +71,7 @@ public class Stations extends APIHeader {
     }
 
     @Override
-    public void buildResponse() {
+    public void buildResponse() throws SQLException, URISyntaxException {
         stations = new ArrayList<>();
         try (
                 Connection conn = getConnection();
@@ -87,8 +87,6 @@ public class Stations extends APIHeader {
                 );
                 stations.add(station);
             }
-        } catch (Exception e) {
-            log.error("Exception: {}", e);
         }
     }
 

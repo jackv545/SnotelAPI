@@ -1,11 +1,14 @@
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+
+import java.net.URISyntaxException;
+import java.sql.SQLException;
 import java.util.List;
 
 public class TestStations {
     @Test
-    public void testGetAllStations() {
+    public void testGetAllStations() throws SQLException, URISyntaxException {
         //Request all available snotel stations
         Stations stationsRequest = new Stations();
         stationsRequest.buildResponse();
@@ -15,7 +18,7 @@ public class TestStations {
     }
 
     @Test
-    public void testGetCOStations() {
+    public void testGetCOStations() throws SQLException, URISyntaxException {
         //Request all stations in Colorado
         Stations stationsRequest = new Stations("state", "CO");
         stationsRequest.buildResponse();
@@ -25,7 +28,7 @@ public class TestStations {
     }
 
     @Test
-    public void testTop5SnowPack() {
+    public void testTop5SnowPack() throws SQLException, URISyntaxException {
         //Request the top 5 stations with most snow
         Stations stationsRequest = new Stations(5);
         stationsRequest.buildResponse();
@@ -38,5 +41,11 @@ public class TestStations {
 
         assertTrue(testDescription,
                 stations.get(0).getSnowDepth() >= stations.get(1).getSnowDepth());
+    }
+
+    @Test(expected = SQLException.class)
+    public void testSQLerror() throws SQLException, URISyntaxException {
+        Stations stationsRequest = new Stations("county", "Summit");
+        stationsRequest.buildResponse();
     }
 }
