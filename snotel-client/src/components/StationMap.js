@@ -10,7 +10,7 @@ export default function StationMap(props) {
             ? "https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png"
             : "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png";
 
-        return( <TileLayer url={tileURL}/> );
+        return ( <TileLayer url={tileURL}/> );
     }
 
     const icon = () => {
