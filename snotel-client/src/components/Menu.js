@@ -30,7 +30,7 @@ export default function Menu(props) {
                 </Typography>
             </Grid>
             {['World Map', 'State / Regions'].map((text, i) => (
-                <Grid item key={i} xs={12}>
+                <Grid item key={i.toString()} xs={12}>
                     <LinkButton
                         to="/worldMap" fullWidth={true} variant="contained"
                         classes={{ label: classes.label, endIcon: classes.endIcon }} color="secondary"

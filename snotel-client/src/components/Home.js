@@ -9,45 +9,51 @@ import StationInfo from './StationInfo';
 import StationMap from './StationMap';
 
 const useStyles = makeStyles({
-  header: props => ({
-      marginTop: props.theme.spacing(3)
-  })
+    header: props => ({
+        marginTop: props.theme.spacing(3)
+    })
 })
 
 export default function Home(props) {
     const classes = useStyles(props);
 
-    if(props.selectedStation === null) {
-        return(
+    const exploreStations = () => {
+        return (
             <Container maxWidth="md">
                 <Grid container spacing={2}>
                     <Grid item sm={12} md={8}>
                         <Menu theme={props.theme} />
                     </Grid>
                     <Grid item sm={12} md={4}>
-                        <TopSnowPack theme={props.theme} setSelectedStation={props.setSelectedStation}/>
+                        <TopSnowPack
+                            theme={props.theme}
+                            setSelectedStation={props.setSelectedStation}
+                        />
                     </Grid>
                 </Grid>
             </Container>
         );
-    } else {
-        return(
+    }
+
+    const stationInfo = () => {
+        return (
             <Container maxWidth="md">
                 <Grid container spacing={1} className={classes.header}>
                     <Grid item xs={12} sm={12} md={4}>
                         <Typography variant="h4" component="h1">
                             {props.selectedStation.name}</Typography>
                         <Typography variant="body2">
-                            {`${props.selectedStation.state}, United States`}</Typography>
+                            {`${props.selectedStation.state}, United States`}
+                        </Typography>
                     </Grid>
                     <Grid item xs={12} sm={12} md={8}>
-                        <StationInfo selectedStation={props.selectedStation}/>
+                        <StationInfo selectedStation={props.selectedStation} />
                     </Grid>
                     <Grid item xs={12} sm={12} md={4}>
-                        
-                    </Grid> 
+
+                    </Grid>
                     <Grid item xs={12} sm={12} md={8}>
-                        <StationMap 
+                        <StationMap
                             prefersDarkMode={props.prefersDarkMode}
                             selectedStation={props.selectedStation}
                         />
@@ -56,4 +62,6 @@ export default function Home(props) {
             </Container>
         );
     }
+
+    return (props.selectedStation === null ? exploreStations() : stationInfo());
 }

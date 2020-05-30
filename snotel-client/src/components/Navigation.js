@@ -2,7 +2,7 @@ import React from 'react';
 
 import { AppBar, Toolbar, Grid, TextField } from '@material-ui/core';
 import { AcUnit } from '@material-ui/icons';
-import Autocomplete from '@material-ui/lab/Autocomplete';
+import { Autocomplete } from '@material-ui/lab';
 import { makeStyles } from '@material-ui/styles';
 
 import LinkButton from '../utils/LinkButton';
@@ -44,6 +44,7 @@ export default function Navigation(props) {
                         <LinkButton 
                             to="/" size="large" startIcon={<AcUnit />} disableRipple
                             classes={{ label: classes.homeButton, root: classes.noHover }}
+                            onClick={() => props.setSelectedStation(null)}
                         >
                             Snotel
                         </LinkButton>
