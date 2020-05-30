@@ -33,20 +33,20 @@ export default function Home(props) {
     } else {
         return(
             <Container maxWidth="md">
-                <Grid container className={classes.header}>
-                    <Grid item sm={12} md={4}>
+                <Grid container spacing={1} className={classes.header}>
+                    <Grid item xs={12} sm={12} md={4}>
                         <Typography variant="h4" component="h1">
                             {props.selectedStation.name}</Typography>
                         <Typography variant="body2">
                             {`${props.selectedStation.state}, United States`}</Typography>
                     </Grid>
-                    <Grid item sm={12} md={8}>
+                    <Grid item xs={12} sm={12} md={8}>
                         <StationInfo selectedStation={props.selectedStation}/>
                     </Grid>
-                    <Grid item sm={12} md={4}>
+                    <Grid item xs={12} sm={12} md={4}>
                         
                     </Grid> 
-                    <Grid item sm={12} md={8}>
+                    <Grid item xs={12} sm={12} md={8}>
                         <StationMap 
                             prefersDarkMode={props.prefersDarkMode}
                             selectedStation={props.selectedStation}
