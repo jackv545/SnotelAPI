@@ -44,7 +44,7 @@ export default function StationMap(props) {
     const createCluster = cluster => {
         return L.divIcon({
             html: `<span>${cluster.getChildCount()}</span>`,
-            className: `marker-cluster ${props.prefersDarkMode ? 'dark' : 'light'}`,
+            className: `marker-cluster dark}`,
             iconSize: L.point(40, 40, true),
         });
     }
