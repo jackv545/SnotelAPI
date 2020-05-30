@@ -9,6 +9,7 @@ import { Brightness4, BrightnessHigh } from '@material-ui/icons';
 import Navigation from './components/Navigation';
 import Home from './components/Home';
 import { sendServerRequestWithBody } from './api/restfulAPI';
+import WorldMap from './components/WorldMap';
 
 function App() {
     const [selectedStation, setSelectedStation] = useState(null);
@@ -57,9 +58,12 @@ function App() {
                 <Navigation
                     prefersDarkMode={prefersDarkMode} darkModeButton={darkModeButton}
                     selectedStation={selectedStation} setSelectedStation={setSelectedStation}
-                    stations={stations}
+                    stations={stations} theme={theme}
                 />
                 <Switch>
+                    <Route path="/worldMap">
+                        <WorldMap prefersDarkMode={prefersDarkMode}/>
+                    </Route>
                     <Route path="/">
                         <Home 
                             theme={theme} prefersDarkMode={prefersDarkMode}

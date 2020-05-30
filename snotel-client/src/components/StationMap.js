@@ -1,8 +1,12 @@
 import React from 'react';
 
 import 'leaflet/dist/leaflet.css';
+import 'react-leaflet-markercluster/dist/styles.min.css';
 import L from 'leaflet';
-import { Map, Marker, Popup, TileLayer } from "react-leaflet";
+import { Map, Marker, Popup, TileLayer } from 'react-leaflet';
+import MarkerClusterGroup from 'react-leaflet-markercluster';
+
+import './LeafletCluster.css';
 
 export default function StationMap(props) {
     const tileLayer = () => {
@@ -24,28 +28,62 @@ export default function StationMap(props) {
         );
     }
 
-    const marker = () => {
+    const marker = (lat, lng, name, key) => {
         return(
             <Marker 
                 icon={icon(props.prefersDarkMode)} 
-                position={[props.selectedStation.lat, props.selectedStation.lng]}
+                position={[lat, lng]} key={key}
             >
                 <Popup>
-                    {props.selectedStation.name}
+                    {name}
                 </Popup>
             </Marker>
         );
     }
 
-    return(
-        <Map
-            center={[props.selectedStation.lat, props.selectedStation.lng]}
-            zoom={8}
-            attributionControl={false}
-            style={{ height: 500, maxwidth: 700 }}
-        >
-            {tileLayer()}
-            {marker()}
-        </Map>
-    );
+    const createCluster = cluster => {
+        return L.divIcon({
+            html: `<span>${cluster.getChildCount()}</span>`,
+            className: `marker-cluster ${props.prefersDarkMode ? 'dark' : 'light'}`,
+            iconSize: L.point(40, 40, true),
+        });
+    }
+
+    const allStationMap = () => {
+        return(
+            <Map
+                bounds={[[70.37, -164.29], [32.92, -103.79]]}
+                attributionControl={false}
+                style={{ height: 500, maxwidth: 700 }}
+            >
+                {tileLayer()}
+                <MarkerClusterGroup
+                    iconCreateFunction={createCluster}
+                    polygonOptions={{weight: 0, fill: false}}
+                >
+                    {props.stations.map((station, i) => (
+                        marker(station.lat, station.lng, station.name, i)
+                    ))}
+                </MarkerClusterGroup>
+            </Map> 
+        );
+    }
+
+    const singleStationMap = () => {
+        const station = props.selectedStation;
+
+        return(
+            <Map
+                center={[station.lat, station.lng]}
+                zoom={8}
+                attributionControl={false}
+                style={{ height: 500, maxwidth: 700 }}
+            >
+                {tileLayer()}
+                {marker(station.lat, station.lng, station.name)}
+            </Map>
+        );
+    }
+
+    return(props.all ? allStationMap() : singleStationMap());
 }
