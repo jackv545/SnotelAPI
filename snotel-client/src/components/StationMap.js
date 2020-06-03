@@ -8,6 +8,18 @@ import MarkerClusterGroup from 'react-leaflet-markercluster';
 
 import './LeafletCluster.css';
 
+import { withStyles } from '@material-ui/core/styles';
+
+const useStyles = (theme) => ({
+    map: {
+        height: 500,
+    },
+    allStationMap: {
+        zIndex: 0,
+        marginTop: theme.spacing(1)
+    }
+});
+
 const tileLayer = (prefersDarkMode) => {
     const tileURL = prefersDarkMode 
         ? "https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png"
@@ -41,11 +53,10 @@ const marker = (lat, lng, name, prefersDarkMode, key='1') => {
 }
 
 const mapProps = {
-    attributionControl: false,
-    style: { height: 500 }
+    attributionControl: false
 }
 
-export default class StationMap extends Component {
+class StationMap extends Component {
     createCluster = cluster => {
         return L.divIcon({
             html: `<span>${cluster.getChildCount()}</span>`,
@@ -55,10 +66,12 @@ export default class StationMap extends Component {
     }
 
     allStationMap = () => {
+        const { classes } = this.props;
+
         return(
             <Map
                 bounds={[[70.37, -164.29], [32.92, -103.79]]}
-                {...mapProps}
+                {...mapProps} className={`${classes.map} ${classes.allStationMap}`}
             >
                 {tileLayer(this.props.prefersDarkMode)}
                 <MarkerClusterGroup
@@ -77,11 +90,12 @@ export default class StationMap extends Component {
 
     singleStationMap = () => {
         const station = this.props.selectedStation;
+        const { classes } = this.props;
 
         return(
             <Map
                 center={[station.lat, station.lng]}
-                zoom={8} {...mapProps}
+                zoom={8} {...mapProps} className={classes.map}
             >
                 {tileLayer(this.props.prefersDarkMode)}
                 {marker(station.lat, station.lng, station.name,
@@ -94,3 +108,5 @@ export default class StationMap extends Component {
         return(this.props.all ? this.allStationMap() : this.singleStationMap());
     }
 }
+
+export default withStyles(useStyles)(StationMap);

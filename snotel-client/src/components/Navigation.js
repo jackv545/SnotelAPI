@@ -1,58 +1,158 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 
-import { AppBar, Toolbar, Grid, TextField } from '@material-ui/core';
-import { AcUnit } from '@material-ui/icons';
-import { Autocomplete } from '@material-ui/lab';
+import { AppBar, Toolbar, Grid, TextField, InputAdornment, Popper, Paper, 
+    Typography, Button, Fade} from '@material-ui/core';
+import { AcUnit, Search, Place } from '@material-ui/icons';
 import { makeStyles } from '@material-ui/styles';
 
+import { sendServerRequestWithBody } from '../api/restfulAPI';
 import LinkButton from '../utils/LinkButton';
 
-const useStyles = makeStyles({
+const useStyles = makeStyles((theme) => ({
     homeButton: {
         textTransform: 'none'
     },
     noHover: props => ({
         '&:hover': {
-            backgroundColor: props.prefersDarkMode ? props.theme.palette.background.paper
-                : props.theme.palette.primary.main
+            backgroundColor: props.prefersDarkMode ? theme.palette.background.paper
+                : theme.palette.primary.main
         }
-    })
-})
+    }),
+    search: {
+        width: '100%'
+    },
+    suggestions: {
+        overflowY: 'auto',
+        maxHeight: '24em',
+        paddingTop: theme.spacing(1),
+        paddingBottom: theme.spacing(1)
+    },
+    suggestion: {
+        textTransform: 'none',
+        justifyContent: 'left',
+        paddingLeft: theme.spacing(2)
+    },
+    noResults: {
+        paddingLeft: theme.spacing(2),
+        paddingRight: theme.spacing(2)
+    }
+}));
 
 export default function Navigation(props) {
-    const search = (
-        <Autocomplete
-            options={props.stations}
-            getOptionLabel={(station) => station.name}
-            value={props.selectedStation}
-            onChange={(event, newValue) => {
-                props.setSelectedStation(newValue)
-            }}
-            style={{ width: 300 }}
-            renderInput={(params) => <TextField {...params} color="secondary"
-                placeholder="Search for a Mountain" variant="outlined" />}
-        />
-    );
+    const [anchorEl, setAnchorEl] = React.useState(null);
+    const [inputValue, setInputValue] = useState('');
+    const [inputValueFirstLetter, setInputValueFirstLetter] = useState('');
+    const [stations, setStations] = useState([]);
+    const [filteredStations, setFilteredStations] = useState([]);
+
+    const handleInputChange = (event) => {
+        setInputValue(event.target.value);
+
+        if (event.target.value.length > 1) {
+            setAnchorEl(event.currentTarget)
+        } else {
+            setAnchorEl(null);
+        }
+    }
+
+    useEffect(() => {
+        setInputValueFirstLetter(inputValue.charAt(0));
+
+        setFilteredStations(
+            stations.filter(station => station.name.toLowerCase().startsWith(inputValue.toLowerCase()))
+        );
+    }, [inputValue, stations]);
+
+    //Load search suggestions into client after the first letter is typed
+    useEffect(() => {
+        if(inputValueFirstLetter !== '') {
+            sendServerRequestWithBody({ requestType: 'stations', requestVersion: 1, 
+                searchField:'name',  searchTerm:inputValueFirstLetter })
+            .then((response => {
+                if (response.statusCode >= 200 && response.statusCode <= 299) {
+                    setStations(response.body.stations)
+                } else {
+                    console.error("Response code: ", response.statusCode, response.statusText);
+                }
+            }));
+        }
+    }, [inputValueFirstLetter])
+
+    const selectStation = (station) => {
+        //Close the search suggestions and clear the search bar after a selection is made
+        setAnchorEl(null);
+        setInputValue('');
+        props.setSelectedStation(station);
+    }
 
     const classes = useStyles(props);
+
+    const suggestions = (
+        <Paper className={classes.suggestions}>
+            {filteredStations.length !== 0 
+            ? filteredStations.map((station, i) => (
+                <Grid item key={i.toString()}>
+                    <Button 
+                        className={classes.suggestion} fullWidth
+                        startIcon={<Place/>}
+                        onClick={() => selectStation(station)}
+                    >
+                        {station.name}
+                    </Button>
+                </Grid>
+            ))
+            : <Typography className={classes.noResults}>
+                No results
+            </Typography>}
+        </Paper>
+    );
+
+    const suggestionsDropdown = (
+        <Popper 
+            open={Boolean(anchorEl)} anchorEl={anchorEl} 
+            placement="bottom-start" transition
+        >
+            {({ TransitionProps }) => (
+                <Fade {...TransitionProps} timeout={300}>
+                    {suggestions}
+                </Fade>
+            )}
+        </Popper>
+    );
+
+    const search = (
+        <TextField
+            color="secondary" placeholder="Search for a Mountain" variant="outlined"
+            value={inputValue} onChange={handleInputChange} className={classes.search}
+            InputProps={{
+                startAdornment: (
+                    <InputAdornment position="start">
+                        <Search/>
+                    </InputAdornment>
+                ),
+            }}
+        />
+    );
 
     return (
         <AppBar position="static" color={props.prefersDarkMode ? "inherit" : "primary"}>
             <Toolbar>
-                <Grid container justify="space-between" alignItems="center">
-                    <Grid item>
-                        <LinkButton 
-                            to="/" size="large" startIcon={<AcUnit />} disableRipple
+                <Grid container alignItems="center" spacing={1}>
+                    <Grid item xs={12} sm={1}>
+                        <LinkButton
+                            to="/" size="large" startIcon={<AcUnit/>} disableRipple
                             classes={{ label: classes.homeButton, root: classes.noHover }}
                             onClick={() => props.setSelectedStation(null)}
                         >
                             Snotel
                         </LinkButton>
                     </Grid>
-                    <Grid item>
+                    <Grid item xs={12} sm={10}>
                         {search}
+                        {suggestionsDropdown}
+                        
                     </Grid>
-                    <Grid item>
+                    <Grid item xs={12} sm={1}>
                         {props.darkModeButton}
                     </Grid>
                 </Grid>

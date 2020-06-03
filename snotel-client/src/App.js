@@ -37,7 +37,7 @@ function App() {
                 {prefersDarkMode ? <BrightnessHigh /> : <Brightness4 />}
             </IconButton>
         </Tooltip>
-    )
+    );
 
     return (
         <ThemeProvider theme={theme}>
