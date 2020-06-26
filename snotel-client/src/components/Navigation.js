@@ -1,12 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 import { AppBar, Toolbar, Grid, TextField, InputAdornment, Popper, Paper, 
-    Typography, Button, Fade} from '@material-ui/core';
+    Typography, Button, ButtonGroup, Fade} from '@material-ui/core';
 import { AcUnit, Search, Place } from '@material-ui/icons';
 import { makeStyles } from '@material-ui/styles';
 
 import { sendServerRequestWithBody } from '../api/restfulAPI';
 import LinkButton from '../utils/LinkButton';
+import useOutsideAlerter from '../utils/OutsideAlerter';
 
 const useStyles = makeStyles((theme) => ({
     homeButton: {
@@ -23,7 +24,7 @@ const useStyles = makeStyles((theme) => ({
     },
     suggestions: {
         overflowY: 'auto',
-        maxHeight: '24em',
+        maxHeight: '50vh',
         paddingTop: theme.spacing(1),
         paddingBottom: theme.spacing(1)
     },
@@ -52,6 +53,12 @@ export default function Navigation(props) {
             setAnchorEl(event.currentTarget)
         } else {
             setAnchorEl(null);
+        }
+    }
+
+    const handleOnFocus = (event) => {
+        if(inputValue.length > 1) {
+            setAnchorEl(event.currentTarget)
         }
     }
 
@@ -90,17 +97,18 @@ export default function Navigation(props) {
     const suggestions = (
         <Paper className={classes.suggestions}>
             {filteredStations.length !== 0 
-            ? filteredStations.map((station, i) => (
-                <Grid item key={i.toString()}>
-                    <Button 
+            ? <ButtonGroup orientation="vertical" variant="text">
+                {filteredStations.map((station, i) => (
+                    <Button
+                        key={i.toString()}
                         className={classes.suggestion} fullWidth
                         startIcon={<Place/>}
                         onClick={() => selectStation(station)}
                     >
                         {station.name}
                     </Button>
-                </Grid>
-            ))
+                ))}
+            </ButtonGroup>
             : <Typography className={classes.noResults}>
                 No results
             </Typography>}
@@ -113,17 +121,24 @@ export default function Navigation(props) {
             placement="bottom-start" transition
         >
             {({ TransitionProps }) => (
-                <Fade {...TransitionProps} timeout={300}>
+                <Fade {...TransitionProps} timeout={200}>
                     {suggestions}
                 </Fade>
             )}
         </Popper>
     );
 
+    //Close search suggestions on click outside
+    const wrapperRef = useRef(null);
+    const clickAway = () => setAnchorEl(null);
+    useOutsideAlerter(wrapperRef, clickAway);
+
     const search = (
         <TextField
             color="secondary" placeholder="Search for a Mountain" variant="outlined"
             value={inputValue} onChange={handleInputChange} className={classes.search}
+            ref={wrapperRef}
+            onFocus={handleOnFocus}
             InputProps={{
                 startAdornment: (
                     <InputAdornment position="start">
