@@ -1,13 +1,13 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 
 import { AppBar, Toolbar, Grid, TextField, InputAdornment, Popper, Paper, 
-    Typography, Button, ButtonGroup, Fade} from '@material-ui/core';
+    Typography, Button, ButtonGroup, Fade, Container, useMediaQuery, Hidden } 
+    from '@material-ui/core';
 import { AcUnit, Search, Place } from '@material-ui/icons';
 import { makeStyles } from '@material-ui/styles';
 
 import { sendServerRequestWithBody } from '../api/restfulAPI';
 import LinkButton from '../utils/LinkButton';
-import useOutsideAlerter from '../utils/OutsideAlerter';
 
 const useStyles = makeStyles((theme) => ({
     homeButton: {
@@ -19,9 +19,14 @@ const useStyles = makeStyles((theme) => ({
                 : theme.palette.primary.main
         }
     }),
-    search: {
-        width: '100%'
+    mobileSearch: {
+        width: '100%',
+        paddingBottom: theme.spacing(1)
     },
+    expandingSearch: props => ({
+        transition: theme.transitions.create('width'),
+        width: props.searchFocus ? '40ch' : '30ch'
+    }),
     suggestions: {
         overflowY: 'auto',
         maxHeight: '50vh',
@@ -40,11 +45,12 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 export default function Navigation(props) {
-    const [anchorEl, setAnchorEl] = React.useState(null);
+    const [anchorEl, setAnchorEl] = useState(null);
     const [inputValue, setInputValue] = useState('');
     const [inputValueFirstLetter, setInputValueFirstLetter] = useState('');
     const [stations, setStations] = useState([]);
     const [filteredStations, setFilteredStations] = useState([]);
+    const [searchFocus, setSearchFocus] = useState(false);
 
     const handleInputChange = (event) => {
         setInputValue(event.target.value);
@@ -56,17 +62,13 @@ export default function Navigation(props) {
         }
     }
 
-    const handleOnFocus = (event) => {
-        if(inputValue.length > 1) {
-            setAnchorEl(event.currentTarget)
-        }
-    }
-
     useEffect(() => {
         setInputValueFirstLetter(inputValue.charAt(0));
 
         setFilteredStations(
-            stations.filter(station => station.name.toLowerCase().startsWith(inputValue.toLowerCase()))
+            stations.filter(station => 
+                station.name.toLowerCase().startsWith(inputValue.toLowerCase())
+            )
         );
     }, [inputValue, stations]);
 
@@ -92,7 +94,9 @@ export default function Navigation(props) {
         props.setSelectedStation(station);
     }
 
-    const classes = useStyles(props);
+    const classes = useStyles(
+        {prefersDarkMode: props.prefersDarkMode, searchFocus: searchFocus}
+    );
 
     const suggestions = (
         <Paper className={classes.suggestions}>
@@ -128,17 +132,36 @@ export default function Navigation(props) {
         </Popper>
     );
 
-    //Close search suggestions on click outside
-    const wrapperRef = useRef(null);
-    const clickAway = () => setAnchorEl(null);
-    useOutsideAlerter(wrapperRef, clickAway);
+    const homeButton = (
+        <LinkButton
+            to="/" size="large" startIcon={<AcUnit/>} disableRipple
+            classes={{ label: classes.homeButton, root: classes.noHover }}
+            onClick={() => props.setSelectedStation(null)}
+        >
+            Snotel
+        </LinkButton>
+    );
+
+    const handleOnFocus = (event) => {
+        if(inputValue.length > 1) {
+            setAnchorEl(event.currentTarget)
+        }
+        setSearchFocus(true);
+    }
+
+    const handleOnBlur = () => {
+        setAnchorEl(null);
+        setSearchFocus(false);
+    }
+
+    const smUp = useMediaQuery(theme => theme.breakpoints.up('sm'));
 
     const search = (
         <TextField
             color="secondary" placeholder="Search for a Mountain" variant="outlined"
-            value={inputValue} onChange={handleInputChange} className={classes.search}
-            ref={wrapperRef}
-            onFocus={handleOnFocus}
+            value={inputValue} onChange={handleInputChange} 
+            className={smUp ? classes.expandingSearch : classes.mobileSearch}
+            onFocus={handleOnFocus} onBlur={handleOnBlur}
             InputProps={{
                 startAdornment: (
                     <InputAdornment position="start">
@@ -149,29 +172,49 @@ export default function Navigation(props) {
         />
     );
 
+    const mobileMenu = (
+        <>
+        <Grid container justify="space-between" alignItems="center">
+            <Grid item>
+                {homeButton}
+            </Grid>
+            <Grid item>
+                {props.darkModeButton}
+            </Grid>
+        </Grid>
+        {search}
+        {suggestionsDropdown}
+        </>
+    );
+
+    const desktopMenu = (
+        <Toolbar disableGutters>
+            <Grid 
+                container alignItems="center" 
+                justify="flex-start" spacing={1}
+            >
+                <Grid item>
+                    {homeButton}
+                </Grid>
+                <Grid item>
+                    {search}
+                    {suggestionsDropdown}
+                </Grid>
+            </Grid>
+            {props.darkModeButton}
+        </Toolbar>
+    );
+
     return (
         <AppBar position="static" color={props.prefersDarkMode ? "inherit" : "primary"}>
-            <Toolbar>
-                <Grid container alignItems="center" spacing={1}>
-                    <Grid item xs={12} sm={1}>
-                        <LinkButton
-                            to="/" size="large" startIcon={<AcUnit/>} disableRipple
-                            classes={{ label: classes.homeButton, root: classes.noHover }}
-                            onClick={() => props.setSelectedStation(null)}
-                        >
-                            Snotel
-                        </LinkButton>
-                    </Grid>
-                    <Grid item xs={12} sm={10}>
-                        {search}
-                        {suggestionsDropdown}
-                        
-                    </Grid>
-                    <Grid item xs={12} sm={1}>
-                        {props.darkModeButton}
-                    </Grid>
-                </Grid>
-            </Toolbar>
+                <Container maxWidth="md">
+                    <Hidden xsDown>
+                        {desktopMenu}
+                    </Hidden> 
+                    <Hidden smUp>
+                        {mobileMenu}
+                    </Hidden>
+                </Container>
         </AppBar>
     );
 }
