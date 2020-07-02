@@ -27,13 +27,13 @@ export default function Footer(props) {
                                 href="https://github.com/jackv545/SnotelAPI"
                                 target="_blank" rel="noopener" color="inherit"
                             >
-                                GitHub Respository
+                                GitHub Repository
                             </Link>
                         </Typography>
                     </Grid>
                     <Divider/>
                     <Grid item>
-                        <Typography variant="subtitle">
+                        <Typography variant="caption">
                             © 2020 <Link 
                                 href="https://jackvisser.com"
                                 target="_blank" rel="noopener" color="inherit"
