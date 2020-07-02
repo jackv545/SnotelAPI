@@ -31,7 +31,10 @@ export default function Snotel(props) {
             />
             <Switch>
                 <Route path="/worldMap">
-                    <WorldMap prefersDarkMode={props.prefersDarkMode} />
+                    <WorldMap 
+                        prefersDarkMode={props.prefersDarkMode} 
+                        setSelectedStation={setSelectedStation}
+                    />
                 </Route>
                 <Route path="/">
                     <Home

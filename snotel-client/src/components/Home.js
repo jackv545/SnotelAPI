@@ -9,13 +9,13 @@ import StationInfo from './StationInfo';
 import StationMap from './StationMap';
 
 const useStyles = makeStyles((theme) => ({
-    header: props => ({
+    header: {
         marginTop: theme.spacing(3)
-    })
+    }
 }));
 
 export default function Home(props) {
-    const classes = useStyles(props);
+    const classes = useStyles();
 
     const exploreStations = () => {
         return (

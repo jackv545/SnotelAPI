@@ -3,10 +3,11 @@ import React, { Component } from 'react';
 import 'leaflet/dist/leaflet.css';
 import 'react-leaflet-markercluster/dist/styles.min.css';
 import L from 'leaflet';
-import { Map, Marker, Popup, TileLayer } from 'react-leaflet';
+import { Map, Marker, TileLayer } from 'react-leaflet';
 import MarkerClusterGroup from 'react-leaflet-markercluster';
 
 import './LeafletCluster.css';
+import { sendServerRequestWithBody } from '../api/restfulAPI'
 
 import { withStyles } from '@material-ui/core/styles';
 
@@ -29,27 +30,20 @@ const tileLayer = (prefersDarkMode) => {
     return ( <TileLayer url={tileURL}/> );
 }
 
-const icon = (prefersDarkMode) => {
+const icon = (prefersDarkMode, selected) => {
+    let markerType = prefersDarkMode ? 'secondary' : 'primary';
+
+    if(selected) {
+        markerType = markerType.concat('-selected');
+    }
+
     return (
         new L.icon({
-            iconUrl: require(`../images/map-marker-${prefersDarkMode ? 'secondary' : 'red'}.png`),
+            iconUrl: require(`../images/map-marker-${markerType}.png`),
             iconAnchor: [18, 34],
             popupAnchor: [0, -32],
             shadowUrl: null
         })
-    );
-}
-
-const marker = (lat, lng, name, prefersDarkMode, key='1') => {
-    return(
-        <Marker 
-            icon={icon(prefersDarkMode)} 
-            position={[lat, lng]} key={key}
-        >
-            <Popup>
-                {name}
-            </Popup>
-        </Marker>
     );
 }
 
@@ -66,6 +60,43 @@ class StationMap extends Component {
         });
     }
 
+    onMarkerClick = (name) => {
+        this.props.setStationSelected(true);
+        this.props.setSelectedStationMarker(null);
+        sendServerRequestWithBody({requestType: 'stations', requestVersion: 1, searchField: 'name', searchTerm: name})
+        .then((response => {
+            if (response.statusCode >= 200 && response.statusCode <= 299) {
+                this.props.setSelectedStationMarker(response.body.stations[0]);
+            } else {
+                console.error("Response code: ", response.statusCode, response.statusText);
+            }
+        }));
+    }
+
+    marker = (lat, lng, name, prefersDarkMode, key='1') => {
+        let selected = false;
+        if(this.props.selectedStationMarker !== null) {
+            selected = key === this.props.selectedStationMarker.triplet;
+        }
+        
+        return(
+            <Marker 
+                icon={icon(prefersDarkMode, selected)} 
+                position={[lat, lng]} key={key}
+                onClick={key === '1' ? null : () => this.onMarkerClick(name)}
+            />
+        );
+    }
+
+    singleMarker = (lat, lng, prefersDarkMode) => {
+        return(
+            <Marker 
+                icon={icon(prefersDarkMode, false)} 
+                position={[lat, lng]} interactive={false}
+            />
+        );
+    }
+
     allStationMap = () => {
         const { classes } = this.props;
 
@@ -80,9 +111,9 @@ class StationMap extends Component {
                     showCoverageOnHover={false}
                     maxClusterRadius={70}
                 >
-                    {this.props.stations.map((station, i) => (
-                        marker(station.lat, station.lng, station.name, 
-                            this.props.prefersDarkMode, i.toString())
+                    {this.props.stations.map((station) => (
+                        this.marker(station.lat, station.lng, station.name, 
+                            this.props.prefersDarkMode, station.triplet)
                     ))}
                 </MarkerClusterGroup>
             </Map> 
@@ -99,7 +130,7 @@ class StationMap extends Component {
                 zoom={8} {...mapProps} className={classes.map}
             >
                 {tileLayer(this.props.prefersDarkMode)}
-                {marker(station.lat, station.lng, station.name,
+                {this.singleMarker(station.lat, station.lng, 
                     this.props.prefersDarkMode)}
             </Map>
         );
