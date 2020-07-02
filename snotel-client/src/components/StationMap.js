@@ -12,6 +12,7 @@ import { withStyles } from '@material-ui/core/styles';
 
 const useStyles = (theme) => ({
     map: {
+        zIndex: 0,
         height: 500,
     },
     allStationMap: {
