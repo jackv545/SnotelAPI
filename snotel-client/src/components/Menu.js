@@ -6,7 +6,7 @@ import { Grid, Typography } from '@material-ui/core';
 import { Public, ChevronRight, FilterHdr } from '@material-ui/icons';
 import { makeStyles } from '@material-ui/styles';
 
-const useStyles = makeStyles({
+const useStyles = makeStyles((theme) => ({
     label: {
         textTransform: 'none',
         justifyContent: 'left'
@@ -14,13 +14,13 @@ const useStyles = makeStyles({
     endIcon: {
         marginLeft: 'auto'
     },
-    menuText: props => ({
-        marginTop: props.theme.spacing(3)
-    })
-})
+    menuText: {
+        marginTop: theme.spacing(3)
+    }
+}));
 
 export default function Menu(props) {
-    const classes = useStyles(props);
+    const classes = useStyles();
 
     return (
         <Grid container spacing={1}>

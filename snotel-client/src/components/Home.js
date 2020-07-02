@@ -8,11 +8,11 @@ import TopSnowPack from './TopSnowPack';
 import StationInfo from './StationInfo';
 import StationMap from './StationMap';
 
-const useStyles = makeStyles({
+const useStyles = makeStyles((theme) => ({
     header: props => ({
-        marginTop: props.theme.spacing(3)
+        marginTop: theme.spacing(3)
     })
-});
+}));
 
 export default function Home(props) {
     const classes = useStyles(props);
@@ -22,11 +22,10 @@ export default function Home(props) {
             <Container maxWidth="md">
                 <Grid container spacing={2}>
                     <Grid item sm={12} md={8}>
-                        <Menu theme={props.theme} />
+                        <Menu/>
                     </Grid>
                     <Grid item sm={12} md={4}>
                         <TopSnowPack
-                            theme={props.theme}
                             setSelectedStation={props.setSelectedStation}
                         />
                     </Grid>

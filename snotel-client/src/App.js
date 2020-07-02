@@ -45,7 +45,7 @@ function App() {
             <Router>
                 <Snotel
                     prefersDarkMode={prefersDarkMode}
-                    darkModeButton={darkModeButton} theme={theme}
+                    darkModeButton={darkModeButton}
                 />
             </Router>
         </ThemeProvider>

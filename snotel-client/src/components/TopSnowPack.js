@@ -6,7 +6,7 @@ import { makeStyles } from '@material-ui/styles';
 
 import { sendServerRequestWithBody } from '../api/restfulAPI';
 
-const useStyles = makeStyles({
+const useStyles = makeStyles((theme) => ({
     label: {
         textTransform: 'none',
         justifyContent: 'left'
@@ -14,13 +14,13 @@ const useStyles = makeStyles({
     endIcon: {
         marginLeft: 'auto'
     },
-    menuText: props => ({
-        marginTop: props.theme.spacing(3)
-    })
-})
+    menuText: {
+        marginTop: theme.spacing(3)
+    }
+}));
 
 export default function TopSnowPack(props) {
-    const classes = useStyles(props);
+    const classes = useStyles();
 
     const [topStations, setTopStations] = useState([]);
 

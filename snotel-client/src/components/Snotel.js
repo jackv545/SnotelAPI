@@ -35,7 +35,6 @@ export default function Snotel(props) {
                 </Route>
                 <Route path="/">
                     <Home
-                        theme={props.theme}
                         prefersDarkMode={props.prefersDarkMode}
                         selectedStation={selectedStation}
                         setSelectedStation={setSelectedStation}
