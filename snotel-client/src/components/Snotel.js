@@ -4,6 +4,7 @@ import { Switch, Route, useHistory } from 'react-router-dom';
 import Navigation from './Navigation';
 import Home from './Home';
 import WorldMap from './WorldMap';
+import Footer from './Footer';
 
 export default function Snotel(props) {
     let history = useHistory();
@@ -41,6 +42,7 @@ export default function Snotel(props) {
                     />
                 </Route>
             </Switch>
+            <Footer prefersDarkMode={props.prefersDarkMode}/>
         </>
     );
 }

@@ -12,7 +12,7 @@ const useStyles = makeStyles({
     header: props => ({
         marginTop: props.theme.spacing(3)
     })
-})
+});
 
 export default function Home(props) {
     const classes = useStyles(props);
