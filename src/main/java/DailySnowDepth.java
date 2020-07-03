@@ -84,6 +84,12 @@ public class DailySnowDepth extends APIHeader {
                         );
                     }
                     nonCommentLine++;
+                } else if (inputLine.contains("SNOLITE")) {
+                    String[] inputLineParts = inputLine.split(":");
+                    String[] id = inputLineParts[0].split(" ");
+                    String[] location = inputLineParts[1].split(", ");
+                    log.info("Network: {} ID: {} Name: {} State: {}", id[0], id[1], location[0],
+                            location[1]);
                 }
             }
         }
