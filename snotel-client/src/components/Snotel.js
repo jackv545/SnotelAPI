@@ -4,6 +4,7 @@ import { Switch, Route, useHistory } from 'react-router-dom';
 import Navigation from './Navigation';
 import Home from './Home';
 import WorldMap from './WorldMap';
+import States from './States';
 import Footer from './Footer';
 
 export default function Snotel(props) {
@@ -35,6 +36,9 @@ export default function Snotel(props) {
                         prefersDarkMode={props.prefersDarkMode} 
                         setSelectedStation={setSelectedStation}
                     />
+                </Route>
+                <Route path="/explore">
+                    <States setSelectedStation={setSelectedStation}/>
                 </Route>
                 <Route path="/">
                     <Home
