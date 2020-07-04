@@ -63,6 +63,21 @@ export default function States(props) {
             : null
         );
     };
+
+    const cardHeader = (stateName) => {
+        return(
+            <Grid container justify="space-between" alignItems="stretch">
+                <Grid item>
+                    <Typography  className={classes.info}>
+                        {stateName}
+                    </Typography>
+                </Grid>
+                <Grid item>
+                    <img src="" alt=""/>
+                </Grid>
+            </Grid>
+        );
+    }
     
     return(
         <Container maxWidth="md" className={classes.container}>
@@ -71,9 +86,7 @@ export default function States(props) {
                     <Grid item xs={12} sm={6} md={4} key={state}>
                         <Card className={classes.card}>
                             <CardContent>
-                                <Typography  className={classes.info}>
-                                    {stateInfo[state].stateName}
-                                </Typography>
+                                {cardHeader(stateInfo[state].stateName)}
                                 <Typography variant="caption">
                                     Top Snowpack
                                 </Typography>
