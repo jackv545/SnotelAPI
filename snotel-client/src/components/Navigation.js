@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 
 import { AppBar, Toolbar, Grid, TextField, InputAdornment, Popper, Paper, 
-    Typography, Button, ButtonGroup, Fade, Container, useMediaQuery, Hidden } 
+    Typography, ButtonGroup, Fade, Container, useMediaQuery, Hidden } 
     from '@material-ui/core';
 import { AcUnit, Search, Place } from '@material-ui/icons';
 import { makeStyles } from '@material-ui/styles';
@@ -79,7 +79,7 @@ export default function Navigation(props) {
                 searchField:'name',  searchTerm:inputValueFirstLetter })
             .then((response => {
                 if (response.statusCode >= 200 && response.statusCode <= 299) {
-                    setStations(response.body.stations)
+                    setStations(response.body.stations);
                 } else {
                     console.error("Response code: ", response.statusCode, response.statusText);
                 }
@@ -87,11 +87,9 @@ export default function Navigation(props) {
         }
     }, [inputValueFirstLetter])
 
-    const selectStation = (station) => {
-        //Close the search suggestions and clear the search bar after a selection is made
+    const closeSuggestions = () => {
         setAnchorEl(null);
         setInputValue('');
-        props.setSelectedStation(station);
     }
 
     const classes = useStyles(
@@ -103,14 +101,14 @@ export default function Navigation(props) {
             {filteredStations.length !== 0 
             ? <ButtonGroup orientation="vertical" variant="text">
                 {filteredStations.map((station, i) => (
-                    <Button
-                        key={i.toString()}
+                    <LinkButton
+                        key={i.toString()} startIcon={<Place/>}
                         className={classes.suggestion} fullWidth
-                        startIcon={<Place/>}
-                        onClick={() => selectStation(station)}
+                        onClick={closeSuggestions}
+                        to={`/${station.urlName}`}
                     >
                         {station.name}
-                    </Button>
+                    </LinkButton>
                 ))}
             </ButtonGroup>
             : <Typography className={classes.noResults}>
@@ -136,7 +134,7 @@ export default function Navigation(props) {
         <LinkButton
             to="/" size="large" startIcon={<AcUnit/>} disableRipple
             classes={{ label: classes.homeButton, root: classes.noHover }}
-            onClick={() => props.setSelectedStation(null)}
+            // onClick={() => props.setSelectedStation(null)}
         >
             Snotel
         </LinkButton>

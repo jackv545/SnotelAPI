@@ -54,12 +54,16 @@ public class Stations extends APIHeader {
                 like = " ILIKE '" + searchTerm + "%'";
                 column = "name";
                 break;
+            case "urlName":
+                like = " ILIKE '" + searchTerm + "%'";
+                column = "\"urlName\"";
+                break;
             case "state":
                 like = "='" + searchTerm + "'";
                 column="state";
                 break;
             default:
-                throw new SQLException("Column " + searchField + " does not exist");
+                throw new SQLException("Column " + searchField + " cannot be searched");
         }
         String query = select + column + like;
         if(orderBySnowdepth) {
@@ -83,7 +87,8 @@ public class Stations extends APIHeader {
                         rs.getDouble("lat"), rs.getDouble("lng"),
                         rs.getInt("timezone"), rs.getString("triplet"),
                         rs.getBoolean("wind"), rs.getInt("snowdepth"),
-                        rs.getString("state"), rs.getString("name")
+                        rs.getString("state"), rs.getString("name"),
+                        rs.getString("urlName")
                 );
                 stations.add(station);
             }

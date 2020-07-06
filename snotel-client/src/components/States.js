@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 
-import { Container, Grid, Card, CardContent, CardActions, Button, Typography } 
+import { Container, Grid, Card, CardContent, CardActions, Typography, Button } 
     from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 
-import { sendServerRequest, sendServerRequestWithBody } from '../api/restfulAPI';
+import { sendServerRequest } from '../api/restfulAPI';
+import LinkButton from '../utils/LinkButton';
 
 const useStyles = makeStyles((theme) => ({
     container: {
@@ -12,6 +13,9 @@ const useStyles = makeStyles((theme) => ({
     },
     button: {
         textTransform: 'none'
+    },
+    media: {
+        borderRadius: '3px'
     },
     info: {
         marginBottom: theme.spacing(2)
@@ -32,48 +36,33 @@ export default function States(props) {
         }));
     }, []);
 
-      
-
-    const onStationButtonClick = (name) => {
-        const reqHeader = {requestType: 'stations', requestVersion: 1}  
-
-        sendServerRequestWithBody({...reqHeader, searchField: 'name', searchTerm: name})
-        .then((response => {
-            if (response.statusCode >= 200 && response.statusCode <= 299) {
-                props.setSelectedStation(response.body.stations[0]);
-            } else {
-                console.error("Response code: ", response.statusCode, response.statusText);
-            }
-        }));
-    }
-
     const classes = useStyles();
 
-    const stationButton = (name, snowDepth) => {
+    const stationButton = (name, snowDepth, urlName) => {
         return(
-            snowDepth !== 0
+            snowDepth > 0
             ? <Grid item>
-                <Button 
-                    className={classes.button} 
-                    onClick={() => onStationButtonClick(name)}
-                >
+                <LinkButton className={classes.button} to={`/${urlName}`}>
                     {name}
-                </Button>
+                </LinkButton>
             </Grid>
             : null
         );
     };
 
-    const cardHeader = (stateName) => {
+    const cardHeader = (state, stateName) => {
         return(
-            <Grid container justify="space-between" alignItems="stretch">
+            <Grid container spacing={1} alignItems="stretch">
+                <Grid item>
+                    <img 
+                        src={`https://raw.githubusercontent.com/jackv545/SnotelAPI/master/snotel-client/src/images/stateFlags/${state.toLowerCase()}.png`} 
+                        alt="" className={classes.media}
+                    />
+                </Grid>
                 <Grid item>
                     <Typography  className={classes.info}>
                         {stateName}
                     </Typography>
-                </Grid>
-                <Grid item>
-                    <img src="" alt=""/>
                 </Grid>
             </Grid>
         );
@@ -86,7 +75,7 @@ export default function States(props) {
                     <Grid item xs={12} sm={6} md={4} key={state}>
                         <Card className={classes.card}>
                             <CardContent>
-                                {cardHeader(stateInfo[state].stateName)}
+                                {cardHeader(state, stateInfo[state].stateName)}
                                 <Typography variant="caption">
                                     Top Snowpack
                                 </Typography>
@@ -96,7 +85,10 @@ export default function States(props) {
                                             {`${stateInfo[state].snowDepth}"`}
                                         </Typography>
                                     </Grid>
-                                    {stationButton(stateInfo[state].name, stateInfo[state].snowDepth)}
+                                    {stationButton(
+                                        stateInfo[state].name, stateInfo[state].snowDepth,
+                                        stateInfo[state].urlName
+                                    )}
                                 </Grid>
                             </CardContent>
                             <CardActions>

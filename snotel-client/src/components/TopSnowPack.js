@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 
-import { Button, Grid, Typography } from '@material-ui/core';
+import { Grid, Typography } from '@material-ui/core';
 import { Place, ChevronRight } from '@material-ui/icons';
 import { makeStyles } from '@material-ui/styles';
 
 import { sendServerRequestWithBody } from '../api/restfulAPI';
+import LinkButton from '../utils/LinkButton';
 
 const useStyles = makeStyles((theme) => ({
     label: {
@@ -44,14 +45,15 @@ export default function TopSnowPack(props) {
             </Grid>
             {topStations.map((station, i) => (
                 <Grid item key={i} xs={12}>
-                    <Button 
+                    <LinkButton 
                         classes={{label: classes.label, endIcon: classes.endIcon}} color="secondary" 
                         fullWidth={true} variant="contained"  
                         startIcon={<Place/>} endIcon={<ChevronRight/>}
-                        onClick={() => props.setSelectedStation(station)}
+                        // onClick={() => props.setSelectedStation(station)}
+                        to={`/${station.urlName}`}
                     >
                         {`${station.name} ${station.state} ${station.snowDepth}"`}
-                    </Button>
+                    </LinkButton>
                 </Grid>
             ))}
         </Grid>

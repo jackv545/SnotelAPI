@@ -73,7 +73,7 @@ class StationMap extends Component {
         }));
     }
 
-    marker = (lat, lng, name, prefersDarkMode, key='1') => {
+    marker = (lat, lng, name, prefersDarkMode, key) => {
         let selected = false;
         if(this.props.selectedStationMarker !== null) {
             selected = key === this.props.selectedStationMarker.triplet;
@@ -83,7 +83,7 @@ class StationMap extends Component {
             <Marker 
                 icon={icon(prefersDarkMode, selected)} 
                 position={[lat, lng]} key={key}
-                onClick={key === '1' ? null : () => this.onMarkerClick(name)}
+                onClick={() => this.onMarkerClick(name)}
             />
         );
     }
@@ -126,12 +126,13 @@ class StationMap extends Component {
 
         return(
             <Map
-                center={[station.lat, station.lng]}
+                center={station ? [station.lat, station.lng] : [42, -115]}
                 zoom={8} {...mapProps} className={classes.map}
             >
                 {tileLayer(this.props.prefersDarkMode)}
-                {this.singleMarker(station.lat, station.lng, 
-                    this.props.prefersDarkMode)}
+                {station ? this.singleMarker(
+                        station.lat, station.lng, this.props.prefersDarkMode)
+                    : null}
             </Map>
         );
     }

@@ -31,8 +31,8 @@ public class States extends APIHeader{
 
                 Statement st2 = conn.createStatement();
                 ResultSet stateTopSnowpack = st2.executeQuery(
-                        "SELECT DISTINCT ON (state) state, name, snowdepth, triplet\n" +
-                                "FROM Stations ORDER BY state, snowdepth DESC;"
+                        "SELECT DISTINCT ON (state) state, name, snowdepth, triplet," +
+                                "\"urlName\" FROM Stations ORDER BY state, snowdepth DESC;"
                 );
         ) {
             while(stationCount.next() && stateTopSnowpack.next()) {
@@ -41,7 +41,8 @@ public class States extends APIHeader{
                         stationCount.getInt("count"),
                         stateTopSnowpack.getString("name"),
                         stateTopSnowpack.getInt("snowdepth"),
-                        stateTopSnowpack.getString("triplet")
+                        stateTopSnowpack.getString("triplet"),
+                        stateTopSnowpack.getString("urlName")
                 );
                 states.put(stationCount.getString("state"), stateInfo);
             }
