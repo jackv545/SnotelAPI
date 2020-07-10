@@ -105,7 +105,7 @@ export default function Navigation(props) {
                         key={i.toString()} startIcon={<Place/>}
                         className={classes.suggestion} fullWidth
                         onClick={closeSuggestions}
-                        to={`/${station.urlName}`}
+                        to={`/location/${station.urlName}`}
                     >
                         {station.name}
                     </LinkButton>
@@ -134,7 +134,6 @@ export default function Navigation(props) {
         <LinkButton
             to="/" size="large" startIcon={<AcUnit/>} disableRipple
             classes={{ label: classes.homeButton, root: classes.noHover }}
-            // onClick={() => props.setSelectedStation(null)}
         >
             Snotel
         </LinkButton>

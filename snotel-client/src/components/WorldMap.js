@@ -65,10 +65,10 @@ export default function WorldMap(props) {
                 {stationLatLng}
             </Grid>
             <Grid item>
-                <LinkButton 
-                    // onClick={() => props.setSelectedStation(selectedStationMarker)}
+                <LinkButton
                     variant="contained" color="secondary" 
-                    to={`/${selectedStationMarker ? selectedStationMarker.urlName : ''}`}
+                    to={selectedStationMarker 
+                        ? `/location/${selectedStationMarker.urlName}` : ''}
                 >
                     Snow Report
                 </LinkButton>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-import { Container, Grid, Card, CardContent, CardActions, Typography, Button } 
+import { Container, Grid, Card, CardContent, CardActions, Typography } 
     from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 
@@ -42,7 +42,7 @@ export default function States(props) {
         return(
             snowDepth > 0
             ? <Grid item>
-                <LinkButton className={classes.button} to={`/${urlName}`}>
+                <LinkButton className={classes.button} to={`/location/${urlName}`}>
                     {name}
                 </LinkButton>
             </Grid>
@@ -92,9 +92,12 @@ export default function States(props) {
                                 </Grid>
                             </CardContent>
                             <CardActions>
-                                <Button className={classes.button} color="secondary">
+                                <LinkButton 
+                                    className={classes.button} color="secondary"
+                                    to={`/explore/${state}`}
+                                >
                                     {`Compare ${stateInfo[state].count} Mountains`}
-                                </Button>
+                                </LinkButton>
                             </CardActions>
                         </Card>
                     </Grid>

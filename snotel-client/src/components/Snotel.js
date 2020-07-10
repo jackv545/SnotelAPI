@@ -5,6 +5,7 @@ import Navigation from './Navigation';
 import Home from './Home';
 import WorldMap from './WorldMap';
 import States from './States';
+import StateInfo from './StateInfo';
 import StationInfo from './StationInfo';
 import Footer from './Footer';
 
@@ -16,17 +17,20 @@ export default function Snotel(props) {
                 darkModeButton={props.darkModeButton}
             />
             <Switch>
-                <Route path="/worldMap">
-                    <WorldMap prefersDarkMode={props.prefersDarkMode}/>
-                </Route>
-                <Route path="/explore">
-                    <States/>
-                </Route>
                 <Route exact path="/">
                     <Home/>
                 </Route>
-                <Route path="/:stationUrlName">
+                <Route exact path="/location">
+                    <WorldMap prefersDarkMode={props.prefersDarkMode}/>
+                </Route>
+                <Route path="/location/:stationUrlName">
                     <StationInfo prefersDarkMode={props.prefersDarkMode}/>
+                </Route>
+                <Route exact path="/explore">
+                    <States/>
+                </Route>
+                <Route path="/explore/:state">
+                    <StateInfo/>
                 </Route>
             </Switch>
             <Footer prefersDarkMode={props.prefersDarkMode}/>
