@@ -7,7 +7,8 @@ import WorldMap from './WorldMap';
 import States from './States';
 import StateInfo from './StateInfo';
 import StationInfo from './StationInfo';
-import Footer from './Footer';
+import Contact from './margins/Contact';
+import Footer from './margins/Footer';
 
 export default function Snotel(props) {
     return (
@@ -19,6 +20,9 @@ export default function Snotel(props) {
             <Switch>
                 <Route exact path="/">
                     <Home/>
+                </Route>
+                <Route exact path="/contact">
+                    <Contact/>
                 </Route>
                 <Route exact path="/location">
                     <WorldMap prefersDarkMode={props.prefersDarkMode}/>
