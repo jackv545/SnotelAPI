@@ -9,7 +9,7 @@ import LinkButton from '../utils/LinkButton';
 
 const useStyles = makeStyles((theme) => ({
     container: {
-        marginTop: theme.spacing(1)
+        marginTop: theme.spacing(3)
     },
     button: {
         textTransform: 'none'

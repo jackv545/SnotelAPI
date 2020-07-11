@@ -5,10 +5,10 @@ import { makeStyles } from '@material-ui/styles';
 
 const useStyles = makeStyles((theme) => ({
     container: {
-        marginTop: theme.spacing(1)
+        marginTop: theme.spacing(3)
     },
     paper: {
-        padding: theme.spacing(1)
+        padding: theme.spacing(2)
     },
     grid: {
         paddingTop: theme.spacing(2)
@@ -18,12 +18,6 @@ const useStyles = makeStyles((theme) => ({
     }
 }));
 
-const encode = (data) => {
-    return Object.keys(data)
-        .map(key => encodeURIComponent(key) + "=" + encodeURIComponent(data[key]))
-        .join("&");
-}
-
 export default function Contact(props) {
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
@@ -32,10 +26,14 @@ export default function Contact(props) {
     const [submitted, setSubmitted] = useState(false);
 
     const handleSubmit = e => {
+        const encode = (data) => {
+            return Object.keys(data)
+                .map(key => encodeURIComponent(key) + "=" + encodeURIComponent(data[key]))
+                .join("&");
+        };
+
         const content = {
-            name: name,
-            email: email,
-            message: message
+            name: name, email: email, message: message
         };
 
         fetch("/", {
@@ -52,44 +50,62 @@ export default function Contact(props) {
     useEffect(() => {
         const regex = /^\S+@\S+$/;
         setEmailValid(regex.test(email));
-    }, [email])
+    }, [email]);
 
     const classes = useStyles();
 
-    const form = (
-        <form onSubmit={handleSubmit} name="contact">
-            <Grid container spacing={2} className={classes.grid}>
-                <Grid item xs={12} sm={6}>
-                    <TextField 
-                        fullWidth label="Name" name="name" variant="outlined"
-                        value={name} onChange={e => setName(e.target.value)}
-                    />
-                    
+    const form = () => {
+        const emailInputError = email === '' ? false : !emailValid;
+
+        const formProps = (name) => {
+            let color = 'secondary';
+            if(name === 'email' && emailInputError) {
+                color = 'primary';
+            }
+
+            return {
+                fullWidth: true, name: name,
+                label: name.charAt(0).toUpperCase().concat(name.slice(1)), 
+                variant: 'outlined', color: color
+            }
+        };
+
+        return(
+            <form onSubmit={handleSubmit} name="contact">
+                <Grid container spacing={2} className={classes.grid}>
+                    <Grid item xs={12} sm={6}>
+                        <TextField 
+                            {...formProps('name')} value={name} 
+                            onChange={e => setName(e.target.value)}
+                        />
+                        
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                        <TextField 
+                            {...formProps('email')} 
+                            error={emailInputError} value={email} 
+                            onChange={e => setEmail(e.target.value)}
+                        />
+                    </Grid>
+                    <Grid item xs={12}>
+                        <TextField 
+                            {...formProps('message')} 
+                            multiline rows={4} value={message} 
+                            onChange={e => setMessage(e.target.value)}
+                        />
+                    </Grid>
+                    <Grid item xs={12}>
+                        <Button 
+                            variant="contained" color="secondary" className={classes.button}
+                            type="submit" disabled={!emailValid || message === ''}
+                        >
+                            Submit
+                        </Button>
+                    </Grid>
                 </Grid>
-                <Grid item xs={12} sm={6}>
-                    <TextField 
-                        fullWidth label="Email" name="email" variant="outlined"
-                        error={email === '' ? false : !emailValid}
-                        value={email} onChange={e => setEmail(e.target.value)}
-                    />
-                </Grid>
-                <Grid item xs={12}>
-                    <TextField 
-                        fullWidth label="Message" name="message" variant="outlined" multiline 
-                        rows={4} value={message} onChange={e => setMessage(e.target.value)}
-                    />
-                </Grid>
-                <Grid item xs={12}>
-                    <Button 
-                        variant="contained" color="secondary" className={classes.button}
-                        type="submit" disabled={!emailValid}
-                    >
-                        Submit
-                    </Button>
-                </Grid>
-            </Grid>
-        </form>
-    );
+            </form>
+        );
+    };
 
     const successMessage = (
         <Typography>
@@ -103,8 +119,8 @@ export default function Contact(props) {
                 <Typography variant="h6" component="h1">
                     Contact
                 </Typography>
-                {submitted ? successMessage : form}
+                {submitted ? successMessage : form()}
             </Paper>
         </Container>
-    )
+    );
 }
