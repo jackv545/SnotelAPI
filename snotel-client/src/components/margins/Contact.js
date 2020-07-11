@@ -61,21 +61,21 @@ export default function Contact(props) {
             <Grid container spacing={2} className={classes.grid}>
                 <Grid item xs={12} sm={6}>
                     <TextField 
-                        fullWidth label="Name" variant="outlined"
+                        fullWidth label="Name" name="name" variant="outlined"
                         value={name} onChange={e => setName(e.target.value)}
                     />
                     
                 </Grid>
                 <Grid item xs={12} sm={6}>
                     <TextField 
-                        fullWidth label="Email" variant="outlined"
+                        fullWidth label="Email" name="email" variant="outlined"
                         error={email === '' ? false : !emailValid}
                         value={email} onChange={e => setEmail(e.target.value)}
                     />
                 </Grid>
                 <Grid item xs={12}>
                     <TextField 
-                        fullWidth label="Message" variant="outlined" multiline 
+                        fullWidth label="Message" name="message" variant="outlined" multiline 
                         rows={4} value={message} onChange={e => setMessage(e.target.value)}
                     />
                 </Grid>
