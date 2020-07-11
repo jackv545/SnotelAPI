@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 import { Container, Paper, Grid, Typography, TextField, Button } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
@@ -27,6 +27,7 @@ const encode = (data) => {
 export default function Contact(props) {
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
+    const [emailValid, setEmailValid] = useState(false);
     const [message, setMessage] = useState('');
     const [submitted, setSubmitted] = useState(false);
 
@@ -48,10 +49,15 @@ export default function Contact(props) {
         e.preventDefault();
     };
 
+    useEffect(() => {
+        const regex = /^\S+@\S+$/;
+        setEmailValid(regex.test(email));
+    }, [email])
+
     const classes = useStyles();
 
     const form = (
-        <form noValidate autoComplete="off" onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} name="contact">
             <Grid container spacing={2} className={classes.grid}>
                 <Grid item xs={12} sm={6}>
                     <TextField 
@@ -63,6 +69,7 @@ export default function Contact(props) {
                 <Grid item xs={12} sm={6}>
                     <TextField 
                         fullWidth label="Email" variant="outlined"
+                        error={email === '' ? false : !emailValid}
                         value={email} onChange={e => setEmail(e.target.value)}
                     />
                 </Grid>
@@ -75,7 +82,7 @@ export default function Contact(props) {
                 <Grid item xs={12}>
                     <Button 
                         variant="contained" color="secondary" className={classes.button}
-                        type="submit"
+                        type="submit" disabled={!emailValid}
                     >
                         Submit
                     </Button>
