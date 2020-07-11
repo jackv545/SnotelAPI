@@ -71,7 +71,7 @@ export default function Contact(props) {
         };
 
         return(
-            <form onSubmit={handleSubmit} name="contact">
+            <form onSubmit={handleSubmit} name="snotel">
                 <Grid container spacing={2} className={classes.grid}>
                     <Grid item xs={12} sm={6}>
                         <TextField 
