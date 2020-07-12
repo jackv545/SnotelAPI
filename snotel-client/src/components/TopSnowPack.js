@@ -42,7 +42,8 @@ export default function TopSnowPack(props) {
             <Grid item key={i.toString()} xs={12}>
                 <LinkButton 
                     classes={{label: classes.label, endIcon: classes.endIcon}} 
-                    color="secondary" fullWidth={true} variant="contained"  
+                    color={props.prefersDarkMode ? "secondary" : "default"}
+                    fullWidth={true} variant="contained"  
                     startIcon={<Place/>} endIcon={<ChevronRight/>}
                     to={`/location/${station.urlName}`}
                 >

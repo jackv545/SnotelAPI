@@ -10,10 +10,11 @@ export default function Home(props) {
         <Container maxWidth="md">
             <Grid container spacing={2}>
                 <Grid item sm={12} md={8}>
-                    <Menu/>
+                    <Menu prefersDarkMode={props.prefersDarkMode}/>
                 </Grid>
                 <Grid item sm={12} md={4}>
                     <TopSnowPack
+                        prefersDarkMode={props.prefersDarkMode}
                         setSelectedStation={props.setSelectedStation}
                     />
                 </Grid>

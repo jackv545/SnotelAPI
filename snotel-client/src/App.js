@@ -8,7 +8,7 @@ import { Brightness4, BrightnessHigh } from '@material-ui/icons';
 import Snotel from './components/Snotel'
 
 function App() {
-    const [prefersDarkMode, setPrefersDarkMode] = useState(true);
+    const [prefersDarkMode, setPrefersDarkMode] = useState(false);
 
     const theme = createMuiTheme({
         palette: {
@@ -17,10 +17,13 @@ function App() {
                 default: prefersDarkMode ? '#757575' : '#eeeeee'
             },
             primary: {
-                main: '#90caf9'
+                light: '#3A5674',
+                main: '#293d52',
+                contrastText: '#fff'
             },
             secondary: {
-                main: prefersDarkMode ? '#2196f3' : '#0d47a1'
+                main: prefersDarkMode ? '#2196f3' : '#E57700',
+                contrastText: '#fff'
             }
         }
     });

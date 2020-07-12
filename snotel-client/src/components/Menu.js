@@ -32,8 +32,9 @@ export default function Menu(props) {
             {['World Map', 'State / Regions'].map((text, i) => (
                 <Grid item key={i.toString()} xs={12}>
                     <LinkButton
-                        to={i === 0 ? "/location" : "/explore"} fullWidth={true} 
-                        variant="contained" color="secondary"
+                        to={i === 0 ? "/location" : "/explore"} 
+                        fullWidth={true} variant="contained" 
+                        color={props.prefersDarkMode ? "secondary" : "default"}
                         classes={{ label: classes.label, endIcon: classes.endIcon }} 
                         startIcon={i === 0 ? <Public /> : <FilterHdr />} 
                         endIcon={<ChevronRight />}

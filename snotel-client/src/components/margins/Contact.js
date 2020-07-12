@@ -15,6 +15,13 @@ const useStyles = makeStyles((theme) => ({
     },
     button: {
         textTransform: 'none'
+    },
+    outlinedInput: {
+        '& .MuiOutlinedInput-root': {
+            '&:hover fieldset': {
+                borderColor: theme.palette.primary.main
+            }
+        }
     }
 }));
 
@@ -58,15 +65,23 @@ export default function Contact(props) {
         const emailInputError = email === '' ? false : !emailValid;
 
         const formProps = (name) => {
-            let color = 'secondary';
-            if(name === 'email' && emailInputError) {
+            let color;
+            if(props.prefersDarkMode) {
+                color = 'secondary';
+                if(name === 'email' && emailInputError) {
+                    color = 'primary';
+                }
+            } else {
                 color = 'primary';
             }
 
             return {
                 fullWidth: true, name: name,
                 label: name.charAt(0).toUpperCase().concat(name.slice(1)), 
-                variant: 'outlined', color: color
+                variant: 'outlined', color: color,
+                classes: { //override mui classes in light theme
+                    root: props.prefersDarkMode ? null : classes.outlinedInput
+                }
             }
         };
 

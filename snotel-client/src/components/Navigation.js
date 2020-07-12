@@ -19,14 +19,34 @@ const useStyles = makeStyles((theme) => ({
                 : theme.palette.primary.main
         }
     }),
+    search: props => ({
+        backgroundColor: props.prefersDarkMode ? null : theme.palette.primary.light,
+        borderRadius: theme.shape.borderRadius
+    }),
     mobileSearch: {
         width: '100%',
-        paddingBottom: theme.spacing(1)
+        marginBottom: theme.spacing(1)
     },
-    expandingSearch: props => ({
+    desktopSearch: props => ({
         transition: theme.transitions.create('width'),
         width: props.searchFocus ? '40ch' : '30ch'
     }),
+    adornment: {
+        color: theme.palette.primary.contrastText
+    },
+    input: {
+        color: theme.palette.primary.contrastText
+    },
+    outlinedInput: {
+        '& .MuiOutlinedInput-root': {
+            '&:hover fieldset': {
+                borderColor: theme.palette.grey[600]
+            },
+            '&.Mui-focused fieldset': {
+                borderColor: theme.palette.grey[600]
+            }
+        }
+    },
     suggestions: {
         overflowY: 'auto',
         maxHeight: '50vh',
@@ -134,6 +154,7 @@ export default function Navigation(props) {
         <LinkButton
             to="/" size="large" startIcon={<AcUnit/>} disableRipple
             classes={{ label: classes.homeButton, root: classes.noHover }}
+            color="inherit"
         >
             Snotel
         </LinkButton>
@@ -155,9 +176,13 @@ export default function Navigation(props) {
 
     const search = (
         <TextField
-            color="secondary" placeholder="Search for a Mountain" variant="outlined"
+            color={props.prefersDarkMode ? "secondary" : null} 
+            placeholder="Search for a Mountain" variant="outlined"
             value={inputValue} onChange={handleInputChange} 
-            className={smUp ? classes.expandingSearch : classes.mobileSearch}
+            className={
+                `${classes.search} ${smUp 
+                    ? classes.desktopSearch : classes.mobileSearch}`
+            }
             onFocus={handleOnFocus} onBlur={handleOnBlur}
             InputProps={{
                 startAdornment: (
@@ -165,6 +190,13 @@ export default function Navigation(props) {
                         <Search/>
                     </InputAdornment>
                 ),
+                classes: {
+                    adornedStart: classes.adornment,
+                    input: classes.input
+                }
+            }}
+            classes={{ //override mui classes in light theme
+                root: props.prefersDarkMode ? null : classes.outlinedInput
             }}
         />
     );
@@ -186,9 +218,7 @@ export default function Navigation(props) {
 
     const desktopMenu = (
         <Toolbar disableGutters>
-            <Grid 
-                container alignItems="center" 
-                justify="flex-start" spacing={1}
+            <Grid container alignItems="center" justify="flex-start" spacing={1}
             >
                 <Grid item>
                     {homeButton}
