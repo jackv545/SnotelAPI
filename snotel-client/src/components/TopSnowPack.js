@@ -18,6 +18,9 @@ const useStyles = makeStyles((theme) => ({
     },
     menuText: {
         marginTop: theme.spacing(3)
+    },
+    snowDepth: {
+        paddingLeft: theme.spacing(1)
     }
 }));
 
@@ -47,7 +50,10 @@ export default function TopSnowPack(props) {
                     startIcon={<Place/>} endIcon={<ChevronRight/>}
                     to={`/location/${station.urlName}`}
                 >
-                    {`${station.name} ${station.state} ${station.snowDepth}"`}
+                    {`${station.name}, ${station.state}`}
+                    <Typography className={classes.snowDepth} variant="body2">
+                        {`${station.snowDepth}"`}
+                    </Typography>
                 </LinkButton>
             </Grid>
         ))

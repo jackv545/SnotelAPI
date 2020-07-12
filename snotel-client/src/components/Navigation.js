@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 
 import { AppBar, Toolbar, Grid, TextField, InputAdornment, Popper, Paper, 
-    Typography, ButtonGroup, Fade, Container, useMediaQuery, Hidden } 
-    from '@material-ui/core';
+    Typography, Fade, Container, useMediaQuery, Hidden, ClickAwayListener, 
+    MenuList, MenuItem, ListItemIcon, Box } from '@material-ui/core';
 import { AcUnit, Search, Place } from '@material-ui/icons';
 import { makeStyles } from '@material-ui/styles';
 
@@ -31,10 +32,7 @@ const useStyles = makeStyles((theme) => ({
         transition: theme.transitions.create('width'),
         width: props.searchFocus ? '40ch' : '30ch'
     }),
-    adornment: {
-        color: theme.palette.primary.contrastText
-    },
-    input: {
+    contrastText: {
         color: theme.palette.primary.contrastText
     },
     outlinedInput: {
@@ -50,17 +48,9 @@ const useStyles = makeStyles((theme) => ({
     suggestions: {
         overflowY: 'auto',
         maxHeight: '50vh',
-        paddingTop: theme.spacing(1),
-        paddingBottom: theme.spacing(1)
-    },
-    suggestion: {
-        textTransform: 'none',
-        justifyContent: 'left',
-        paddingLeft: theme.spacing(2)
     },
     noResults: {
-        paddingLeft: theme.spacing(2),
-        paddingRight: theme.spacing(2)
+        padding: theme.spacing(2)
     }
 }));
 
@@ -71,6 +61,7 @@ export default function Navigation(props) {
     const [stations, setStations] = useState([]);
     const [filteredStations, setFilteredStations] = useState([]);
     const [searchFocus, setSearchFocus] = useState(false);
+    const [autoFocusItem, setAutoFocusItem] = useState(false);
 
     const handleInputChange = (event) => {
         setInputValue(event.target.value);
@@ -105,12 +96,23 @@ export default function Navigation(props) {
                 }
             }));
         }
-    }, [inputValueFirstLetter])
+    }, [inputValueFirstLetter]);
 
-    const closeSuggestions = () => {
+    const closeSuggestions = (resetInput) => {
+        if(resetInput) {
+            setInputValue('');
+        }
         setAnchorEl(null);
-        setInputValue('');
+        setAutoFocusItem(false);
+        setSearchFocus(false);
     }
+    
+    const handleListKeyDown = (event) => {
+        if (event.key === 'Tab') {
+            event.preventDefault();
+            setAnchorEl(null);
+        }
+    };
 
     const classes = useStyles(
         {prefersDarkMode: props.prefersDarkMode, searchFocus: searchFocus}
@@ -119,20 +121,25 @@ export default function Navigation(props) {
     const suggestions = (
         <Paper className={classes.suggestions}>
             {filteredStations.length !== 0 
-            ? <ButtonGroup orientation="vertical" variant="text">
+            ? <MenuList 
+                id="suggestions" onKeyDown={handleListKeyDown}
+                autoFocusItem={autoFocusItem}
+            >
                 {filteredStations.map((station, i) => (
-                    <LinkButton
-                        key={i.toString()} startIcon={<Place/>}
-                        className={classes.suggestion} fullWidth
-                        onClick={closeSuggestions}
+                    <MenuItem 
+                        component={Link} onClick={() => closeSuggestions(true)}
                         to={`/location/${station.urlName}`}
+                        key={i.toString()}
                     >
+                        <ListItemIcon>
+                            <Place/>
+                        </ListItemIcon>
                         {station.name}
-                    </LinkButton>
+                    </MenuItem>
                 ))}
-            </ButtonGroup>
+            </MenuList>
             : <Typography className={classes.noResults}>
-                No results
+                No results were found.
             </Typography>}
         </Paper>
     );
@@ -140,7 +147,7 @@ export default function Navigation(props) {
     const suggestionsDropdown = (
         <Popper 
             open={Boolean(anchorEl)} anchorEl={anchorEl} 
-            placement="bottom-start" transition
+            role={undefined} placement="bottom-start" transition
         >
             {({ TransitionProps }) => (
                 <Fade {...TransitionProps} timeout={200}>
@@ -167,23 +174,25 @@ export default function Navigation(props) {
         setSearchFocus(true);
     }
 
-    const handleOnBlur = () => {
-        setAnchorEl(null);
-        setSearchFocus(false);
-    }
+    const handleSearchKeyUp = (event) => {
+        if(event.key === 'ArrowDown' && Boolean(anchorEl)) {
+            setAutoFocusItem(true);
+            event.preventDefault();
+        }
+    };
 
     const smUp = useMediaQuery(theme => theme.breakpoints.up('sm'));
 
-    const search = (
+    const textField = (
         <TextField
             color={props.prefersDarkMode ? "secondary" : null} 
             placeholder="Search for a Mountain" variant="outlined"
-            value={inputValue} onChange={handleInputChange} 
+            value={inputValue} onChange={handleInputChange}
             className={
                 `${classes.search} ${smUp 
                     ? classes.desktopSearch : classes.mobileSearch}`
             }
-            onFocus={handleOnFocus} onBlur={handleOnBlur}
+            onFocus={handleOnFocus} onKeyUp={handleSearchKeyUp}
             InputProps={{
                 startAdornment: (
                     <InputAdornment position="start">
@@ -191,14 +200,23 @@ export default function Navigation(props) {
                     </InputAdornment>
                 ),
                 classes: {
-                    adornedStart: classes.adornment,
-                    input: classes.input
+                    adornedStart: classes.contrastText,
+                    input: classes.contrastText
                 }
             }}
             classes={{ //override mui classes in light theme
                 root: props.prefersDarkMode ? null : classes.outlinedInput
             }}
         />
+    );
+
+    const search = (
+        <ClickAwayListener onClickAway={() => closeSuggestions(false)}>
+            <Box>
+                {textField}
+                {suggestionsDropdown}
+            </Box>
+        </ClickAwayListener>
     );
 
     const mobileMenu = (
@@ -212,20 +230,17 @@ export default function Navigation(props) {
             </Grid>
         </Grid>
         {search}
-        {suggestionsDropdown}
         </>
     );
 
     const desktopMenu = (
         <Toolbar disableGutters>
-            <Grid container alignItems="center" justify="flex-start" spacing={1}
-            >
+            <Grid container alignItems="center" justify="flex-start" spacing={1}>
                 <Grid item>
                     {homeButton}
                 </Grid>
                 <Grid item>
                     {search}
-                    {suggestionsDropdown}
                 </Grid>
             </Grid>
             {props.darkModeButton}
@@ -234,14 +249,14 @@ export default function Navigation(props) {
 
     return (
         <AppBar position="static" color={props.prefersDarkMode ? "inherit" : "primary"}>
-                <Container maxWidth="md">
-                    <Hidden xsDown>
-                        {desktopMenu}
-                    </Hidden> 
-                    <Hidden smUp>
-                        {mobileMenu}
-                    </Hidden>
-                </Container>
+            <Container maxWidth="md">
+                <Hidden xsDown>
+                    {desktopMenu}
+                </Hidden> 
+                <Hidden smUp>
+                    {mobileMenu}
+                </Hidden>
+            </Container>
         </AppBar>
     );
 }

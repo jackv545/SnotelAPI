@@ -80,7 +80,8 @@ export default function Contact(props) {
                 label: name.charAt(0).toUpperCase().concat(name.slice(1)), 
                 variant: 'outlined', color: color,
                 classes: { //override mui classes in light theme
-                    root: props.prefersDarkMode ? null : classes.outlinedInput
+                    root: !props.prefersDarkMode && !emailInputError 
+                        ? classes.outlinedInput : null
                 }
             }
         };
