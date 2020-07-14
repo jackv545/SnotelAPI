@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { BrowserRouter as Router } from 'react-router-dom';
 
 import { Tooltip, IconButton, CssBaseline } from '@material-ui/core';
@@ -9,6 +9,7 @@ import Snotel from './components/Snotel'
 
 function App() {
     const [prefersDarkMode, setPrefersDarkMode] = useState(false);
+    const buttonRef = useRef(null);
 
     const theme = createMuiTheme({
         palette: {
@@ -33,7 +34,7 @@ function App() {
             title="Toggle light/dark theme"
             aria-label="toggle light/dark theme" leaveDelay={100}
         >
-            <IconButton color="inherit"
+            <IconButton color="inherit" ref={buttonRef}
                 onClick={() => setPrefersDarkMode(prefersDarkMode =>
                     !prefersDarkMode)}
             >
@@ -42,6 +43,10 @@ function App() {
         </Tooltip>
     );
 
+    const setDarkModeFocus = () => {
+        buttonRef.current.focus();
+    };
+
     return (
         <ThemeProvider theme={theme}>
             <CssBaseline />
@@ -49,6 +54,7 @@ function App() {
                 <Snotel
                     prefersDarkMode={prefersDarkMode}
                     darkModeButton={darkModeButton}
+                    setDarkModeFocus={setDarkModeFocus}
                 />
             </Router>
         </ThemeProvider>

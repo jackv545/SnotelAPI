@@ -1,25 +1,18 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 
 import { AppBar, Toolbar, Grid, TextField, InputAdornment, Popper, Paper, 
     Typography, Fade, Container, useMediaQuery, Hidden, ClickAwayListener, 
     MenuList, MenuItem, ListItemIcon, Box } from '@material-ui/core';
-import { AcUnit, Search, Place } from '@material-ui/icons';
+import { Search, Place } from '@material-ui/icons';
 import { makeStyles } from '@material-ui/styles';
 
 import { sendServerRequestWithBody } from '../api/restfulAPI';
-import LinkButton from '../utils/LinkButton';
 
 const useStyles = makeStyles((theme) => ({
-    homeButton: {
-        textTransform: 'none'
+    link: {
+        textDecoration: 'none'
     },
-    noHover: props => ({
-        '&:hover': {
-            backgroundColor: props.prefersDarkMode ? theme.palette.background.paper
-                : theme.palette.primary.main
-        }
-    }),
     search: props => ({
         backgroundColor: props.prefersDarkMode ? null : theme.palette.primary.light,
         borderRadius: theme.shape.borderRadius
@@ -63,6 +56,8 @@ export default function Navigation(props) {
     const [searchFocus, setSearchFocus] = useState(false);
     const [autoFocusItem, setAutoFocusItem] = useState(false);
 
+    const homeButtonRef = useRef(null);
+
     const handleInputChange = (event) => {
         setInputValue(event.target.value);
 
@@ -102,15 +97,20 @@ export default function Navigation(props) {
         if(resetInput) {
             setInputValue('');
         }
+        setSearchFocus(false);
         setAnchorEl(null);
         setAutoFocusItem(false);
-        setSearchFocus(false);
     }
     
     const handleListKeyDown = (event) => {
-        if (event.key === 'Tab') {
+        if (event.key === 'Tab' && !event.shiftKey) {
             event.preventDefault();
-            setAnchorEl(null);
+            closeSuggestions(false);
+            props.setDarkModeFocus();
+        } else if (event.key === 'Tab' && event.shiftKey) {
+            event.preventDefault();
+            closeSuggestions(false);
+            homeButtonRef.current.focus();
         }
     };
 
@@ -158,13 +158,12 @@ export default function Navigation(props) {
     );
 
     const homeButton = (
-        <LinkButton
-            to="/" size="large" startIcon={<AcUnit/>} disableRipple
-            classes={{ label: classes.homeButton, root: classes.noHover }}
-            color="inherit"
+        <Typography 
+            className={classes.link} component={Link} color="inherit" 
+            to="/" variant="button" ref={homeButtonRef}
         >
             Snotel
-        </LinkButton>
+        </Typography>
     );
 
     const handleOnFocus = (event) => {
@@ -172,14 +171,38 @@ export default function Navigation(props) {
             setAnchorEl(event.currentTarget)
         }
         setSearchFocus(true);
-    }
+    };
 
     const handleSearchKeyUp = (event) => {
         if(event.key === 'ArrowDown' && Boolean(anchorEl)) {
-            setAutoFocusItem(true);
             event.preventDefault();
+            setAutoFocusItem(true);
+        } else if (event.key === 'Escape') {
+            setInputValue('');
+            if(Boolean(anchorEl)) {
+                setAnchorEl(null);
+            }
         }
     };
+
+    const handleSearchKeyDown = (event) => {
+        if(event.key === 'Tab' && !event.shiftKey) {
+            if(Boolean(anchorEl)) {
+                event.preventDefault();
+                closeSuggestions(false);
+            } else {
+                setSearchFocus(false);
+            }
+        } else if(event.key === 'Tab' && event.shiftKey) {
+            if(Boolean(anchorEl)) {
+                closeSuggestions(false);
+            } else {
+                setSearchFocus(false);
+            }
+            event.preventDefault();
+            homeButtonRef.current.focus();
+        }
+    }
 
     const smUp = useMediaQuery(theme => theme.breakpoints.up('sm'));
 
@@ -193,6 +216,7 @@ export default function Navigation(props) {
                     ? classes.desktopSearch : classes.mobileSearch}`
             }
             onFocus={handleOnFocus} onKeyUp={handleSearchKeyUp}
+            onKeyDown={handleSearchKeyDown}
             InputProps={{
                 startAdornment: (
                     <InputAdornment position="start">

@@ -16,6 +16,7 @@ export default function Snotel(props) {
             <Navigation
                 prefersDarkMode={props.prefersDarkMode}
                 darkModeButton={props.darkModeButton}
+                setDarkModeFocus={props.setDarkModeFocus}
             />
             <Switch>
                 <Route exact path="/">
