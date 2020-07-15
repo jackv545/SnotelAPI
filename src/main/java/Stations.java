@@ -88,7 +88,7 @@ public class Stations extends APIHeader {
                         rs.getInt("timezone"), rs.getString("triplet"),
                         rs.getBoolean("wind"), rs.getInt("snowdepth"),
                         rs.getString("state"), rs.getString("name"),
-                        rs.getString("urlName")
+                        rs.getString("statename"), rs.getString("urlName")
                 );
                 stations.add(station);
             }

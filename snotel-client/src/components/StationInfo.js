@@ -18,6 +18,12 @@ const useStyles = makeStyles((theme) => ({
 export default function StationInfo(props) {
     const [selectedStation, setSelectedStation] = useState(null);
 
+    useEffect(() => {
+        if(selectedStation) {
+            document.title = `${selectedStation.name} | Snotel`;
+        }
+    }, [selectedStation]);
+
     let urlParams = useParams();
 
     useEffect(() => {

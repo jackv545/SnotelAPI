@@ -22,6 +22,13 @@ const useStyles = makeStyles((theme) => ({
 export default function StateInfo(props) {
     const [stations, setStations] = useState([]);
 
+    useEffect(() => {
+        if(stations.length > 0) {
+            document.title = `${stations[0].stateName} | Snotel`;
+        }
+        
+    }, [stations]);
+
     let urlParams = useParams();
 
     useEffect(() => {

@@ -26,6 +26,8 @@ export default function States(props) {
     const [stateInfo, setStateInfo] = useState({});
 
     useEffect(() => {
+        document.title = 'Explore | Snotel';
+        
         sendServerRequest('states')
         .then((response => {
             if (response.statusCode >= 200 && response.statusCode <= 299) {

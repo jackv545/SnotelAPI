@@ -1,12 +1,13 @@
 public class Station {
     private int elevation, timezone, snowDepth;
     private double lat, lng;
-    private String triplet, state, name, urlName;
+    private String triplet, state, name, stateName, urlName;
     private boolean wind;
 
     public Station(
             int elevation, double lat, double lng, int timezone, String triplet,
-            boolean wind, int snowDepth, String state, String name, String urlName
+            boolean wind, int snowDepth, String state, String name, String stateName,
+            String urlName
     ) {
         this.elevation = elevation;
         this.lat = lat;
@@ -17,6 +18,7 @@ public class Station {
         this.snowDepth = snowDepth;
         this.state = state;
         this.name = name;
+        this.stateName = stateName;
         this.urlName = urlName;
     }
 

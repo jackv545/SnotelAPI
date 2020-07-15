@@ -26,6 +26,10 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 export default function Contact(props) {
+    useEffect(() => {
+        document.title = 'Contact | Snotel';
+    }, []);
+
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [emailValid, setEmailValid] = useState(false);

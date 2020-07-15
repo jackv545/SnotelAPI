@@ -23,6 +23,8 @@ export default function WorldMap(props) {
     const [selectedStationMarker, setSelectedStationMarker] = useState(null);
 
     useEffect(() => {
+        document.title = 'World Map | Snotel';
+
         sendServerRequestWithBody({requestType: 'stations', requestVersion: 1})
         .then((response => {
             if (response.statusCode >= 200 && response.statusCode <= 299) {

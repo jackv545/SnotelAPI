@@ -9,6 +9,7 @@ import StateInfo from './StateInfo';
 import StationInfo from './StationInfo';
 import Contact from './margins/Contact';
 import Footer from './margins/Footer';
+import PageNotFound from './margins/PageNotFound';
 
 export default function Snotel(props) {
     return (
@@ -36,6 +37,9 @@ export default function Snotel(props) {
                 </Route>
                 <Route path="/explore/:state">
                     <StateInfo/>
+                </Route>
+                <Route path="*">
+                    <PageNotFound/>
                 </Route>
             </Switch>
             <Footer prefersDarkMode={props.prefersDarkMode}/>

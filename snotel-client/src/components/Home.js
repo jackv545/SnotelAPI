@@ -6,6 +6,10 @@ import Menu from './Menu';
 import TopSnowPack from './TopSnowPack';
 
 export default function Home(props) {
+    React.useEffect(() => {
+        document.title = 'Snotel';
+    }, []);
+
     return (
         <Container maxWidth="md">
             <Grid container spacing={2}>
