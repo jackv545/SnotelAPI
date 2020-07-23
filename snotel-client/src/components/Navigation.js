@@ -3,15 +3,21 @@ import { Link } from 'react-router-dom';
 
 import { AppBar, Toolbar, Grid, TextField, InputAdornment, Popper, Paper, 
     Typography, Fade, Container, useMediaQuery, Hidden, ClickAwayListener, 
-    MenuList, MenuItem, ListItemIcon, Box } from '@material-ui/core';
+    MenuList, MenuItem, ListItemIcon, Box, ButtonBase } from '@material-ui/core';
 import { Search, Place } from '@material-ui/icons';
 import { makeStyles } from '@material-ui/styles';
 
 import { sendServerRequestWithBody } from '../api/restfulAPI';
 
+import HomeButtonOrange from '../images/HomeButtonOrange.png';
+import HomeButtonBlue from '../images/HomeButtonBlue.png';
+
 const useStyles = makeStyles((theme) => ({
-    link: {
-        textDecoration: 'none'
+    homeButton: {
+        borderRadius: theme.shape.borderRadius
+    },
+    img: {
+        height: theme.spacing(4)
     },
     search: props => ({
         backgroundColor: props.prefersDarkMode ? null : theme.palette.primary.light,
@@ -158,12 +164,15 @@ export default function Navigation(props) {
     );
 
     const homeButton = (
-        <Typography 
-            className={classes.link} component={Link} color="inherit" 
-            to="/" variant="button" ref={homeButtonRef}
+        <ButtonBase 
+            component={Link} to="/" ref={homeButtonRef} 
+            focusRipple className={classes.homeButton}
         >
-            Snotel
-        </Typography>
+            <img 
+                className={classes.img} alt="Snotel"
+                src={props.prefersDarkMode ? HomeButtonBlue : HomeButtonOrange}
+            />
+        </ButtonBase>
     );
 
     const handleOnFocus = (event) => {
