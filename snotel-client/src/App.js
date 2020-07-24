@@ -5,7 +5,7 @@ import { Tooltip, IconButton, CssBaseline } from '@material-ui/core';
 import { createMuiTheme, ThemeProvider } from '@material-ui/core/styles';
 import { Brightness4, BrightnessHigh } from '@material-ui/icons';
 
-import Snotel from './components/Snotel'
+import Routes from './components/Routes'
 
 function App() {
     const [prefersDarkMode, setPrefersDarkMode] = useState(false);
@@ -51,7 +51,7 @@ function App() {
         <ThemeProvider theme={theme}>
             <CssBaseline />
             <Router>
-                <Snotel
+                <Routes
                     prefersDarkMode={prefersDarkMode}
                     darkModeButton={darkModeButton}
                     setDarkModeFocus={setDarkModeFocus}
