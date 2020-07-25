@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 
-import { Container, Grid, Card, CardContent, CardActions, Typography } 
+import { Container, Grid, Card, CardContent, CardActions, Typography, Button } 
     from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 
 import { sendServerRequest } from '../api/restfulAPI';
-import LinkButton from '../utils/LinkButton';
 
 const useStyles = makeStyles((theme) => ({
     container: {
@@ -44,9 +44,11 @@ export default function States(props) {
         return(
             snowDepth > 0
             ? <Grid item>
-                <LinkButton className={classes.button} to={`/location/${urlName}`}>
+                <Button 
+                    className={classes.button} 
+                    component={Link} to={`/location/${urlName}`}>
                     {name}
-                </LinkButton>
+                </Button>
             </Grid>
             : null
         );
@@ -94,12 +96,12 @@ export default function States(props) {
                                 </Grid>
                             </CardContent>
                             <CardActions>
-                                <LinkButton 
+                                <Button 
                                     className={classes.button} color="secondary"
-                                    to={`/explore/${state}`}
+                                    component={Link} to={`/explore/${state}`}
                                 >
                                     {`Compare ${stateInfo[state].count} Mountains`}
-                                </LinkButton>
+                                </Button>
                             </CardActions>
                         </Card>
                     </Grid>

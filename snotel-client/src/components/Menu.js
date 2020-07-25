@@ -1,8 +1,7 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 
-import LinkButton from '../utils/LinkButton';
-
-import { Grid, Typography } from '@material-ui/core';
+import { Button, Grid, Typography } from '@material-ui/core';
 import { Public, ChevronRight, FilterHdr } from '@material-ui/icons';
 import { makeStyles } from '@material-ui/styles';
 
@@ -31,8 +30,8 @@ export default function Menu(props) {
             </Grid>
             {['World Map', 'State / Regions'].map((text, i) => (
                 <Grid item key={i.toString()} xs={12}>
-                    <LinkButton
-                        to={i === 0 ? "/location" : "/explore"} 
+                    <Button
+                        component={Link} to={i === 0 ? "/location" : "/explore"} 
                         fullWidth={true} variant="contained" 
                         color={props.prefersDarkMode ? "secondary" : "default"}
                         classes={{ label: classes.label, endIcon: classes.endIcon }} 
@@ -40,7 +39,7 @@ export default function Menu(props) {
                         endIcon={<ChevronRight />}
                     >
                         {text}
-                    </LinkButton>
+                    </Button>
                 </Grid>
             ))}
         </Grid>

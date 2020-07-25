@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 
-import { Container, Grid, Collapse, Paper, Typography, IconButton } 
+import { Container, Grid, Collapse, Paper, Typography, IconButton, Button } 
     from '@material-ui/core';
 import { Skeleton } from '@material-ui/lab';
 import { makeStyles } from '@material-ui/styles';
@@ -8,7 +9,6 @@ import { Close } from '@material-ui/icons';
 
 import StationMap from './StationMap';
 import { sendServerRequestWithBody } from '../api/restfulAPI';
-import LinkButton from '../utils/LinkButton';
 
 const useStyles = makeStyles((theme) => ({
     markerInfo: {
@@ -67,13 +67,13 @@ export default function WorldMap(props) {
                 {stationLatLng}
             </Grid>
             <Grid item>
-                <LinkButton
+                <Button
                     variant="contained" color="secondary" 
-                    to={selectedStationMarker 
+                    component={Link} to={selectedStationMarker 
                         ? `/location/${selectedStationMarker.urlName}` : ''}
                 >
                     Snow Report
-                </LinkButton>
+                </Button>
             </Grid>
         </Grid>
     );
