@@ -14,6 +14,7 @@ const useStyles = makeStyles((theme) => ({
         justifyContent: 'left'
     },
     endIcon: {
+        color: theme.palette.secondary.main,
         marginLeft: 'auto'
     },
     menuText: {
@@ -45,8 +46,7 @@ export default function TopSnowPack(props) {
             <Grid item key={i.toString()} xs={12}>
                 <Button 
                     classes={{label: classes.label, endIcon: classes.endIcon}} 
-                    color={props.prefersDarkMode ? "secondary" : "default"}
-                    fullWidth={true} variant="contained"  
+                    fullWidth={true} variant="outlined"
                     startIcon={<Place/>} endIcon={<ChevronRight/>}
                     component={Link} to={`/location/${station.urlName}`}
                 >
@@ -62,7 +62,7 @@ export default function TopSnowPack(props) {
     const listSkeleton = (
         [...Array(5)].map((val, i) => (
             <Grid item xs={12} key={i.toString()}>
-                <Skeleton height={36}/>
+                <Skeleton variant="rect" height={36}/>
             </Grid>
         ))
     );

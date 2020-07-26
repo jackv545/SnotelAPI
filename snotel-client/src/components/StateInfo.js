@@ -206,8 +206,8 @@ export default function StateInfo(props) {
 
         return (
             <Grid container justify="space-around" className={classes.mt1}>
-                {[label, value].map((text) => (
-                    <Grid item>
+                {[label, value].map((text, i) => (
+                    <Grid item key={`${station.urlName}${i}`}>
                         <Typography variant="body2">{text}</Typography>
                     </Grid>
                 ))}
@@ -218,7 +218,7 @@ export default function StateInfo(props) {
     const listSkeleton = (
         [...Array(20)].map((val, i) => (
             <Grid item xs={12} sm={6} key={i.toString()}>
-                <Skeleton height={80}/>
+                <Skeleton variant="rect" height={80}/>
             </Grid>
         ))
     );

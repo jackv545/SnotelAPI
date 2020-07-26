@@ -15,7 +15,8 @@ function App() {
         palette: {
             type: prefersDarkMode ? 'dark' : 'light',
             background: {
-                default: prefersDarkMode ? '#757575' : '#eeeeee'
+                paper: prefersDarkMode ? '#212121' : '#fff',
+                default: prefersDarkMode ? '#121212' : '#eeeeee'
             },
             primary: {
                 light: '#3A5674',

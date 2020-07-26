@@ -11,6 +11,7 @@ const useStyles = makeStyles((theme) => ({
         justifyContent: 'left'
     },
     endIcon: {
+        color: theme.palette.secondary.main,
         marginLeft: 'auto'
     },
     menuText: {
@@ -32,8 +33,8 @@ export default function Menu(props) {
                 <Grid item key={i.toString()} xs={12}>
                     <Button
                         component={Link} to={i === 0 ? "/location" : "/explore"} 
-                        fullWidth={true} variant="contained" 
-                        color={props.prefersDarkMode ? "secondary" : "default"}
+                        fullWidth={true} variant="outlined" 
+                        // color={props.prefersDarkMode ? "secondary" : "default"}
                         classes={{ label: classes.label, endIcon: classes.endIcon }} 
                         startIcon={i === 0 ? <Public /> : <FilterHdr />} 
                         endIcon={<ChevronRight />}
