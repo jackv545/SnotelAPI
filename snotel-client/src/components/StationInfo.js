@@ -8,6 +8,7 @@ import { makeStyles } from '@material-ui/styles';
 
 import StationMap from './StationMap';
 import { sendServerRequestWithBody } from '../api/restfulAPI';
+import { commasInNumber } from '../utils/NumberCommas';
 
 const useStyles = makeStyles((theme) => ({
     header: {
@@ -39,9 +40,6 @@ export default function StationInfo(props) {
             }
         }));
     }, [urlParams]);
-
-    const commasInNumber = (number) => 
-        number.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,');
 
     const classes = useStyles();
 

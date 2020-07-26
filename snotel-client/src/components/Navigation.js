@@ -281,7 +281,7 @@ export default function Navigation(props) {
     );
 
     return (
-        <AppBar position="static" color={props.prefersDarkMode ? "inherit" : "primary"}>
+        <AppBar position="sticky" color={props.prefersDarkMode ? "inherit" : "primary"}>
             <Container maxWidth="md">
                 <Hidden xsDown>
                     {desktopMenu}
