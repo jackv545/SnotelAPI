@@ -1,6 +1,7 @@
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.URISyntaxException;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -22,8 +23,13 @@ public class StateBounds extends APIHeader{
         this.requestType = "stateBounds";
     }
 
+    public StateBounds(String state) {
+        this();
+        this.state = state;
+    }
+
     @Override
-    public void buildResponse() throws Exception {
+    public void buildResponse() throws SQLException, URISyntaxException {
         boolean validState = Arrays.stream(STATES).anyMatch(state::equals);
 
         if(validState) {
@@ -45,8 +51,17 @@ public class StateBounds extends APIHeader{
                     stateBounds[1][1] = rs.getDouble("maxLng");
                 }
             }
+
+            //add more space to view marker
+            if(stateBounds[1][0] < 89.9) {
+                stateBounds[1][0] += 0.1;
+            }
         } else {
             throw new SQLException();
         }
+    }
+
+    public double[][] getStateBounds() {
+        return stateBounds;
     }
 }

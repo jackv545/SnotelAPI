@@ -176,7 +176,7 @@ export default function StateInfo(props) {
                 {Object.keys(sortOptions).map((optionKey) => (
                     <MenuItem
                         onClick={() => handleMenuItemClick(optionKey)}
-                        key={optionKey}
+                        selected={optionKey === selectedSort} key={optionKey}
                     >
                         {sortOptions[optionKey]}
                     </MenuItem>

@@ -28,8 +28,6 @@ export default function WorldMap(props) {
     useEffect(() => {
         const boundsHeader = { requestType: 'stateBounds', requestVersion: 1 };
         if(urlParams.state) {
-            document.title = `${urlParams.state} Map | Snotel`;
-
             sendServerRequestWithBody({ ...boundsHeader, state: urlParams.state })
                 .then((response => {
                     if (response.statusCode >= 200 && response.statusCode <= 299) {
@@ -39,8 +37,6 @@ export default function WorldMap(props) {
                     }
                 })
             );
-        } else {
-            document.title = 'World Map | Snotel';
         }
 
         const stationsHeader = { requestType: 'stations', requestVersion: 1 };
@@ -50,6 +46,12 @@ export default function WorldMap(props) {
             .then((response => {
                 if (response.statusCode >= 200 && response.statusCode <= 299) {
                     setStations(response.body.stations)
+
+                    if(urlParams.state) {
+                        document.title = `${response.body.stations[0].stateName} Map | Snotel`;
+                    } else {
+                        document.title = 'World Map | Snotel';
+                    }
                 } else {
                     console.error("Response code: ", response.statusCode, response.statusText);
                 }
