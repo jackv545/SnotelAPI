@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link as RouterLink } from 'react-router-dom';
+import { useParams, useLocation, Link as RouterLink } from 'react-router-dom';
 
 import {Container, Grid, Card, CardContent, Link, Typography, Button,
-    Menu, MenuItem, Tab, Tabs} from '@material-ui/core';
+    Menu, MenuItem, ButtonBase } from '@material-ui/core';
 import { Skeleton } from '@material-ui/lab';
-import { makeStyles } from '@material-ui/styles';
+import { makeStyles, useTheme } from '@material-ui/styles';
 import { fade } from '@material-ui/core/styles';
 import { Public, ArrowDropDown } from '@material-ui/icons';
 
@@ -36,13 +36,19 @@ const useStyles = makeStyles((theme) => ({
         marginLeft: 'auto'
     },
     tab: {
-        minHeight: theme.spacing(3),
+        ...theme.typography.button,
+        textTransform: 'none',
+        justifyContent: 'left',
+        padding: '5px 15px',
+        width: '100%',
+        transition: theme.transitions.create(['background-color'], {
+            duration: theme.transitions.duration.short,
+        }),
         borderRadius: theme.shape.borderRadius,
         border: `1px solid ${
             theme.palette.type === 'light' 
             ? 'rgba(0, 0, 0, 0.23)' : 'rgba(255, 255, 255, 0.23)'
         }`,
-        textTransform: 'none',
         '&:hover': {
             backgroundColor: 
                 fade(theme.palette.text.primary, theme.palette.action.hoverOpacity),
@@ -52,14 +58,6 @@ const useStyles = makeStyles((theme) => ({
             }
         }
     },
-    tabSelected: {
-        backgroundColor: 
-            fade(theme.palette.secondary.main, theme.palette.action.activatedOpacity),
-        pointerEvents: 'none'
-    },
-    tabWrapper: {
-        alignItems: 'flex-start'
-    },
     mt1: {
         marginTop: theme.spacing(1)
     },
@@ -68,6 +66,11 @@ const useStyles = makeStyles((theme) => ({
     }
 }));
 
+// A custom hook that builds on useLocation to parse the query string
+function useQuery() {
+    return new URLSearchParams(useLocation().search);
+}
+
 export default function StateInfo(props) {
     const [stations, setStations] = useState([]);
 
@@ -75,7 +78,6 @@ export default function StateInfo(props) {
         if (stations.length > 0) {
             document.title = `${stations[0].stateName} | Snotel`;
         }
-
     }, [stations]);
 
     let urlParams = useParams();
@@ -91,31 +93,45 @@ export default function StateInfo(props) {
                 } else {
                     console.error("Response code: ", response.statusCode, response.statusText);
                 }
-            }));
+            })
+        );
     }, [urlParams]);
 
+    let query = useQuery();
+
+    useEffect(() => {
+        if(query.get('tab')) {
+            setSelectedView(query.get('tab'));
+        } else {
+            setSelectedView('snowpack');
+        }
+    }, [query]);
+
     const classes = useStyles();
+    const theme = useTheme();
 
     const viewOptions = ['snowpack', 'elevation'];
-    const [selectedView, setSelectedView] = useState(0);
-    const handleTabChange = (event, newValue) => setSelectedView(newValue);
+    const [selectedView, setSelectedView] = useState('snowpack');
 
     const viewTabs = (
-        <Tabs
-            orientation="vertical" aria-label="station-info"
-            onChange={handleTabChange}
-            value={selectedView} className={classes.mt2}
-        >
-            {viewOptions.map((viewOption, i) => (
-                <Tab 
-                    label={viewOption.charAt(0).toUpperCase() + viewOption.slice(1)} 
-                    value={i} key={viewOption} id={`tab${i}`}
-                    classes={{root: classes.tab, selected: classes.tabSelected, 
-                        wrapper: classes.tabWrapper}} 
-                    className={classes.mt1}
-                />
-            ))}
-        </Tabs>
+        viewOptions.map((viewOption, i) => (
+            <Grid item key={viewOption} className={i === 0 ? classes.mt2 : null}>
+                <ButtonBase 
+                    focusRipple classes={{root: classes.tab}} 
+                    component={RouterLink} to={`?tab=${viewOption}`}
+                    style={viewOption === selectedView ? { 
+                        backgroundColor: 
+                            fade(
+                                theme.palette.secondary.main, 
+                                theme.palette.action.activatedOpacity
+                            ),
+                        pointerEvents: 'none'
+                    } : null}
+                >
+                    {viewOption.charAt(0).toUpperCase() + viewOption.slice(1)}
+                </ButtonBase>
+            </Grid>
+        ))
     );
 
     const sortOptions = { alphabetical: 'A-Z', elevation: 'Elevation', snowpack: 'Snowpack' };
@@ -136,7 +152,7 @@ export default function StateInfo(props) {
     }
 
     const sortSelect = (
-        <div className={classes.mt1}>
+        <div className={classes.mt2}>
             <Typography variant="caption">
                 Sort By:
             </Typography>
@@ -170,7 +186,7 @@ export default function StateInfo(props) {
     const mapButton = (
         <Button
             fullWidth variant="outlined" startIcon={<Public />}
-            classes={{ label: classes.label }} className={classes.mt1}
+            classes={{ label: classes.label }} className={classes.mt2}
             component={RouterLink} to={`/location`}
         >
             Switch to Map
@@ -196,7 +212,7 @@ export default function StateInfo(props) {
 
     const stationInfo = (station, selectedView) => {
         let label, value;
-        if (selectedView === 0) {
+        if (selectedView === 'snowpack') {
             label = 'Snow Depth:'
             value = `${station.snowDepth}"`;
         } else {
