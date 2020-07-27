@@ -31,7 +31,9 @@ export default function TopSnowPack(props) {
     const [topStations, setTopStations] = useState([]);
 
     useEffect(() => {
-        sendServerRequestWithBody({requestType: 'stations', requestVersion: 1, limit: 5, orderBySnowdepth: true})
+        const requestOptions = {requestType: 'stations', requestVersion: 1};
+        
+        sendServerRequestWithBody({...requestOptions, limit: 5, orderBy: 'snowDepth'})
         .then((response => {
             if (response.statusCode >= 200 && response.statusCode <= 299) {
                 setTopStations(response.body.stations);

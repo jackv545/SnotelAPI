@@ -13,28 +13,28 @@ public class Stations extends APIHeader {
 
     private List<Station> stations;
     private int limit;
-    private String searchField, searchTerm;
+    private String searchField, searchTerm, orderBy;
     private boolean orderBySnowdepth;
 
     public Stations() {
         this.limit = 822;
         this.searchField = "name";
         this.searchTerm = "";
-        this.orderBySnowdepth = false;
+        this.orderBy = "";
     }
 
-    public Stations(String searchField, String searchTerm) {
+    public Stations(String searchField, String searchTerm, String orderBy) {
         this.limit = 822;
         this.searchField = searchField;
         this.searchTerm = searchTerm;
-        this.orderBySnowdepth = false;
+        this.orderBy = orderBy;
     }
 
     public Stations(int limit) {
         this.limit = limit;
         this.searchField = "name";
         this.searchTerm = "";
-        this.orderBySnowdepth = true;
+        this.orderBy = "snowDepth";
     }
 
     public static Connection getConnection() throws URISyntaxException, SQLException {
@@ -47,29 +47,46 @@ public class Stations extends APIHeader {
     }
 
     private String queryString() throws SQLException {
-        String select = "SELECT * FROM stations WHERE ";
-        String like, column;
+        String query = "SELECT * FROM stations";
         switch (searchField) {
             case "name":
-                like = " ILIKE '" + searchTerm + "%'";
-                column = "name";
+                String column = "name";
+                String like = " ILIKE '" + searchTerm + "%'";
+                query += " WHERE " + column + like;
                 break;
             case "urlName":
-                like = " ILIKE '" + searchTerm + "%'";
                 column = "\"urlName\"";
+                like = " ILIKE '" + searchTerm + "%'";
+                query += " WHERE " + column + like;
                 break;
             case "state":
-                like = "='" + searchTerm + "'";
                 column="state";
+                like = "='" + searchTerm + "'";
+                query += " WHERE " + column + like;
+                break;
+            case "":
+            case "none":
                 break;
             default:
-                throw new SQLException("Column " + searchField + " cannot be searched");
+                throw new SQLException("Cannot search by: " + searchField);
         }
-        String query = select + column + like;
-        if(orderBySnowdepth) {
-            query = query + " ORDER BY snowdepth DESC";
+        switch (orderBy) {
+            case "alphabetical":
+                query += " ORDER BY name";
+                break;
+            case "elevation":
+                query += " ORDER BY elevation DESC";
+                break;
+            case "snowDepth":
+                query += " ORDER BY snowdepth DESC";
+                break;
+            case "":
+            case "none":
+                break;
+            default:
+                throw new SQLException("Cannot order by: " + orderBy);
         }
-        query = query + " LIMIT " + limit;
+        query += " LIMIT " + limit;
         log.info("SQL Query: {}", query);
         return query;
     }

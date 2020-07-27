@@ -20,7 +20,7 @@ public class TestStations {
     @Test
     public void testGetCOStations() throws SQLException, URISyntaxException {
         //Request all stations in Colorado
-        Stations stationsRequest = new Stations("state", "CO");
+        Stations stationsRequest = new Stations("state", "CO", "");
         stationsRequest.buildResponse();
 
         assertEquals("Count of available CO stations",
@@ -43,9 +43,17 @@ public class TestStations {
                 stations.get(0).getSnowDepth() >= stations.get(1).getSnowDepth());
     }
 
+    //should throw error when search field option is invalid
     @Test(expected = SQLException.class)
-    public void testSQLerror() throws SQLException, URISyntaxException {
-        Stations stationsRequest = new Stations("county", "Summit");
+    public void testSQLerror1() throws SQLException, URISyntaxException {
+        Stations stationsRequest = new Stations("county", "Summit", "");
+        stationsRequest.buildResponse();
+    }
+
+    //should throw error when orderBy option is invalid
+    @Test(expected = SQLException.class)
+    public void testSQLerror2() throws SQLException, URISyntaxException {
+        Stations stationsRequest = new Stations("state", "CO", "weather");
         stationsRequest.buildResponse();
     }
 }

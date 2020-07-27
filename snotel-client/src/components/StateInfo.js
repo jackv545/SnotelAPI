@@ -72,31 +72,6 @@ function useQuery() {
 }
 
 export default function StateInfo(props) {
-    const [stations, setStations] = useState([]);
-
-    useEffect(() => {
-        if (stations.length > 0) {
-            document.title = `${stations[0].stateName} | Snotel`;
-        }
-    }, [stations]);
-
-    let urlParams = useParams();
-
-    useEffect(() => {
-        const reqHeader = { requestType: 'stations', requestVersion: 1 };
-        const search = { searchField: 'state', searchTerm: urlParams.state };
-
-        sendServerRequestWithBody({ ...reqHeader, ...search })
-            .then((response => {
-                if (response.statusCode >= 200 && response.statusCode <= 299) {
-                    setStations(response.body.stations);
-                } else {
-                    console.error("Response code: ", response.statusCode, response.statusText);
-                }
-            })
-        );
-    }, [urlParams]);
-
     let query = useQuery();
 
     useEffect(() => {
@@ -134,8 +109,35 @@ export default function StateInfo(props) {
         ))
     );
 
-    const sortOptions = { alphabetical: 'A-Z', elevation: 'Elevation', snowpack: 'Snowpack' };
+    const sortOptions = { none: 'None', alphabetical: 'A-Z', 
+        elevation: 'Elevation', snowDepth: 'Snowpack' };
     const [selectedSort, setSelectedSort] = useState('alphabetical');
+
+    const [stations, setStations] = useState([]);
+
+    useEffect(() => {
+        if (stations.length > 0) {
+            document.title = `${stations[0].stateName} | Snotel`;
+        }
+    }, [stations]);
+
+    let urlParams = useParams();
+
+    useEffect(() => {
+        const reqHeader = { requestType: 'stations', requestVersion: 1 };
+        const search = { searchField: 'state', searchTerm: urlParams.state };
+
+        sendServerRequestWithBody({ ...reqHeader, ...search, orderBy: selectedSort })
+            .then((response => {
+                if (response.statusCode >= 200 && response.statusCode <= 299) {
+                    setStations(response.body.stations);
+                } else {
+                    console.error("Response code: ", response.statusCode, response.statusText);
+                }
+            })
+        );
+    }, [urlParams, selectedSort]);
+
     const [anchorEl, setAnchorEl] = useState(null);
 
     const handleClick = (event) => {
@@ -187,7 +189,7 @@ export default function StateInfo(props) {
         <Button
             fullWidth variant="outlined" startIcon={<Public />}
             classes={{ label: classes.label }} className={classes.mt2}
-            component={RouterLink} to={`/location`}
+            component={RouterLink} to={`/map`}
         >
             Switch to Map
         </Button>
