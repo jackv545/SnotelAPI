@@ -102,7 +102,7 @@ class StationMap extends Component {
 
         return(
             <Map
-                bounds={[[70.37, -164.29], [32.92, -103.79]]}
+                bounds={this.props.bounds}
                 {...mapProps} className={`${classes.map} ${classes.allStationMap}`}
             >
                 {tileLayer(this.props.prefersDarkMode)}

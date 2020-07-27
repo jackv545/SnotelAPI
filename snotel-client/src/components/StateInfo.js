@@ -189,7 +189,7 @@ export default function StateInfo(props) {
         <Button
             fullWidth variant="outlined" startIcon={<Public />}
             classes={{ label: classes.label }} className={classes.mt2}
-            component={RouterLink} to={`/map`}
+            component={RouterLink} to={`/map/${urlParams.state}`}
         >
             Switch to Map
         </Button>

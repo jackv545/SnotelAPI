@@ -34,6 +34,7 @@ public class MicroServer {
         Spark.post("api/snotel", this::processSnotelRequest);
         Spark.post("api/dailySnowDepth", this::processDailySnowDepthRequest);
         Spark.get("api/states", this::processStatesRequest);
+        Spark.post("api/stateBounds", this::processStateBoundsRequest);
     }
 
     private String processConfigRequest(Request request, Response response) {
@@ -54,6 +55,10 @@ public class MicroServer {
 
     private String processStatesRequest(Request request, Response response) {
         return processGetRequest(new States(), request, response);
+    }
+
+    private String processStateBoundsRequest(Request request, Response response) {
+        return processPostRequest(StateBounds.class, request, response);
     }
 
     private String processGetRequest(APIHeader requestType, Request request, Response response) {

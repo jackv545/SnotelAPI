@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 
 import { Container, Grid, Collapse, Paper, Typography, IconButton, Button } 
     from '@material-ui/core';
@@ -21,19 +21,41 @@ export default function WorldMap(props) {
     const [stations, setStations] = useState([]);
     const [stationSelected, setStationSelected] = useState(false);
     const [selectedStationMarker, setSelectedStationMarker] = useState(null);
+    const [bounds, setBounds] = useState([[70.37, -164.29], [32.92, -103.79]]);
+
+    let urlParams = useParams();
 
     useEffect(() => {
-        document.title = 'World Map | Snotel';
+        const boundsHeader = { requestType: 'stateBounds', requestVersion: 1 };
+        if(urlParams.state) {
+            document.title = `${urlParams.state} Map | Snotel`;
 
-        sendServerRequestWithBody({requestType: 'stations', requestVersion: 1})
-        .then((response => {
-            if (response.statusCode >= 200 && response.statusCode <= 299) {
-                setStations(response.body.stations)
-            } else {
-                console.error("Response code: ", response.statusCode, response.statusText);
-            }
-        }));
-    }, []);
+            sendServerRequestWithBody({ ...boundsHeader, state: urlParams.state })
+                .then((response => {
+                    if (response.statusCode >= 200 && response.statusCode <= 299) {
+                        setBounds(response.body.stateBounds);
+                    } else {
+                        console.error("Response code: ", response.statusCode, response.statusText);
+                    }
+                })
+            );
+        } else {
+            document.title = 'World Map | Snotel';
+        }
+
+        const stationsHeader = { requestType: 'stations', requestVersion: 1 };
+        const search = urlParams.state 
+            ? { searchField: 'state', searchTerm: urlParams.state} : null;
+        sendServerRequestWithBody({...stationsHeader, ...search})
+            .then((response => {
+                if (response.statusCode >= 200 && response.statusCode <= 299) {
+                    setStations(response.body.stations)
+                } else {
+                    console.error("Response code: ", response.statusCode, response.statusText);
+                }
+            })
+        );
+    }, [urlParams]);
 
     const deselectStation = () => {
         setStationSelected(false);
@@ -98,7 +120,8 @@ export default function WorldMap(props) {
     return(
         <Container maxWidth="md">
             <StationMap 
-                all stations={stations} prefersDarkMode={props.prefersDarkMode}
+                all bounds={bounds} 
+                stations={stations} prefersDarkMode={props.prefersDarkMode}
                 setStationSelected={setStationSelected}
                 selectedStationMarker={selectedStationMarker}
                 setSelectedStationMarker={setSelectedStationMarker}

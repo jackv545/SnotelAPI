@@ -26,7 +26,7 @@ export default function Routes(props) {
                 <Route exact path="/contact">
                     <Contact prefersDarkMode={props.prefersDarkMode}/>
                 </Route>
-                <Route exact path="/map">
+                <Route exact path="/map/:state?">
                     <WorldMap prefersDarkMode={props.prefersDarkMode}/>
                 </Route>
                 <Route path="/location/:stationUrlName">
