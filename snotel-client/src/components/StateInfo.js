@@ -2,11 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useLocation, Link as RouterLink } from 'react-router-dom';
 
 import {Container, Grid, Card, CardContent, Link, Typography, Button,
-    Menu, MenuItem, ButtonBase } from '@material-ui/core';
+    Menu, MenuItem, ButtonBase, useMediaQuery, Hidden } from '@material-ui/core';
 import { Skeleton } from '@material-ui/lab';
 import { makeStyles, useTheme } from '@material-ui/styles';
 import { fade } from '@material-ui/core/styles';
-import { Public, ArrowDropDown } from '@material-ui/icons';
+import { Public, Sort, ArrowDropDown } from '@material-ui/icons';
 
 import { sendServerRequestWithBody } from '../api/restfulAPI';
 import { commasInNumber } from '../utils/NumberCommas';
@@ -32,19 +32,26 @@ const useStyles = makeStyles((theme) => ({
         textTransform: 'none',
         justifyContent: 'left'
     },
+    noTextTransform: {
+        textTransform: 'none',
+    },
     endIcon: {
         marginLeft: 'auto'
     },
     tab: {
         ...theme.typography.button,
         textTransform: 'none',
-        justifyContent: 'left',
         padding: '5px 15px',
         width: '100%',
         transition: theme.transitions.create(['background-color'], {
             duration: theme.transitions.duration.short,
         }),
         borderRadius: theme.shape.borderRadius,
+        justifyContent: 'left',
+        [theme.breakpoints.down('xs')]: {
+            borderRadius: theme.spacing(2),
+            justifyContent: 'center'
+        },
         border: `1px solid ${
             theme.palette.type === 'light' 
             ? 'rgba(0, 0, 0, 0.23)' : 'rgba(255, 255, 255, 0.23)'
@@ -63,7 +70,12 @@ const useStyles = makeStyles((theme) => ({
     },
     mt2: {
         marginTop: theme.spacing(2)
-    }
+    },
+    mt2smUp: {
+        [theme.breakpoints.up('sm')]: {
+            marginTop: theme.spacing(2)
+        }
+    },
 }));
 
 // A custom hook that builds on useLocation to parse the query string
@@ -90,7 +102,10 @@ export default function StateInfo(props) {
 
     const viewTabs = (
         viewOptions.map((viewOption, i) => (
-            <Grid item key={viewOption} className={i === 0 ? classes.mt2 : null}>
+            <Grid 
+                item xs={6} sm={12} key={viewOption} 
+                className={i === 0 ? classes.mt2smUp : null}
+            >
                 <ButtonBase 
                     focusRipple classes={{root: classes.tab}} 
                     component={RouterLink} to={`?tab=${viewOption}`}
@@ -114,7 +129,8 @@ export default function StateInfo(props) {
     const [selectedSort, setSelectedSort] = useState('alphabetical');
 
     const [stations, setStations] = useState([]);
-
+    
+    //set tab title
     useEffect(() => {
         if (stations.length > 0) {
             document.title = `${stations[0].stateName} | Snotel`;
@@ -123,6 +139,7 @@ export default function StateInfo(props) {
 
     let urlParams = useParams();
 
+    //get stations from state url param
     useEffect(() => {
         const reqHeader = { requestType: 'stations', requestVersion: 1 };
         const search = { searchField: 'state', searchTerm: urlParams.state };
@@ -153,42 +170,50 @@ export default function StateInfo(props) {
         handleClose();
     }
 
+    const smUp = useMediaQuery(theme => theme.breakpoints.up('sm'));
+
     const sortSelect = (
-        <div className={classes.mt2}>
-            <Typography variant="caption">
-                Sort By:
-            </Typography>
-            <Button
-                fullWidth variant="outlined" aria-controls="sort-menu"
-                aria-haspopup="true"
-                classes={{ label: classes.label, endIcon: classes.endIcon }}
-                onClick={handleClick} endIcon={<ArrowDropDown />}
-            >
-                {sortOptions[selectedSort]}
-            </Button>
-            <Menu
-                id="sort-menu" anchorEl={anchorEl} keepMounted
-                open={Boolean(anchorEl)} onClose={handleClose}
-                getContentAnchorEl={null}
-                anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
-                transformOrigin={{ vertical: "top", horizontal: "center" }}
-            >
-                {Object.keys(sortOptions).map((optionKey) => (
-                    <MenuItem
-                        onClick={() => handleMenuItemClick(optionKey)}
-                        selected={optionKey === selectedSort} key={optionKey}
-                    >
-                        {sortOptions[optionKey]}
-                    </MenuItem>
-                ))}
-            </Menu>
+        <div className={classes.mt2smUp}>
+            <Hidden xsDown>
+                <Grid item xs>
+                    <Typography variant="caption">
+                        Sort by:
+                    </Typography>
+                </Grid>
+            </Hidden>
+                <Button
+                    fullWidth variant="outlined" aria-controls="sort-menu"
+                    aria-haspopup="true"
+                    classes={{ label: classes.label, endIcon: classes.endIcon }}
+                    onClick={handleClick} endIcon={<ArrowDropDown/>}
+                    startIcon={smUp ? null : <Sort/>}
+                >
+                    {sortOptions[selectedSort]}
+                </Button>
+                <Menu
+                    id="sort-menu" anchorEl={anchorEl} keepMounted
+                    open={Boolean(anchorEl)} onClose={handleClose}
+                    getContentAnchorEl={null} 
+                    anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+                    transformOrigin={{ vertical: "top", horizontal: "center" }}
+                >
+                    {Object.keys(sortOptions).map((optionKey) => (
+                        <MenuItem
+                            onClick={() => handleMenuItemClick(optionKey)}
+                            selected={optionKey === selectedSort} key={optionKey}
+                        >
+                            {sortOptions[optionKey]}
+                        </MenuItem>
+                    ))}
+                </Menu>
         </div>
     );
 
     const mapButton = (
         <Button
-            fullWidth variant="outlined" startIcon={<Public />}
-            classes={{ label: classes.label }} className={classes.mt2}
+            fullWidth variant="outlined" startIcon={<Public/>}
+            classes={{ label: smUp ? classes.label : classes.noTextTransform}} 
+            className={classes.mt2smUp}
             component={RouterLink} to={`/map/${urlParams.state}`}
         >
             Switch to Map
@@ -196,17 +221,17 @@ export default function StateInfo(props) {
     );
 
     const listOptions = (
-        <Grid container direction="column" spacing={1} className={classes.listOptions}>
-            <Grid item>
+        <Grid container spacing={1} className={classes.listOptions}>
+            <Grid item xs={12}>
                 <Typography variant="h4" component="h1">
                     {stations.length > 0 ? stations[0].stateName : <Skeleton />}
                 </Typography>
             </Grid>
             {viewTabs}
-            <Grid item>
+            <Grid item xs={6} sm={12}>
                 {sortSelect}
             </Grid>
-            <Grid item>
+            <Grid item xs={6} sm={12}>
                 {mapButton}
             </Grid>
         </Grid>
