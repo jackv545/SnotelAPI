@@ -14,7 +14,6 @@ public class Stations extends APIHeader {
     private List<Station> stations;
     private int limit;
     private String searchField, searchTerm, orderBy;
-    private boolean orderBySnowdepth;
 
     public Stations() {
         this.limit = 822;
@@ -100,12 +99,13 @@ public class Stations extends APIHeader {
                 ResultSet rs = st.executeQuery(queryString());
         ) {
             while(rs.next()) {
-                Station station = new Station(rs.getInt("elevation"),
-                        rs.getDouble("lat"), rs.getDouble("lng"),
-                        rs.getInt("timezone"), rs.getString("triplet"),
-                        rs.getBoolean("wind"), rs.getInt("snowdepth"),
-                        rs.getString("state"), rs.getString("name"),
-                        rs.getString("statename"), rs.getString("urlName")
+                Station station = new Station(
+                    rs.getInt("elevation"),
+                    rs.getDouble("lat"), rs.getDouble("lng"),
+                    rs.getInt("timezone"), rs.getString("triplet"),
+                    rs.getBoolean("wind"), rs.getInt("snowdepth"),
+                    rs.getString("state"), rs.getString("name"),
+                    rs.getString("statename"), rs.getString("urlName")
                 );
                 stations.add(station);
             }
