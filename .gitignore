@@ -1,6 +1,7 @@
 #API
 /target/
 /.idea/
+/src/resources
 
 # dependencies
 snotel-client/node_modules
