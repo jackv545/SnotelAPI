@@ -8,10 +8,11 @@ import spark.Spark;
 import java.lang.reflect.Type;
 import java.net.URISyntaxException;
 import java.sql.SQLException;
-import java.sql.SQLTimeoutException;
 
 public class MicroServer {
     private final Logger log = LoggerFactory.getLogger(MicroServer.class);
+
+    public static final String DEFAULT_QUERY_PARAM = "Any";
 
     MicroServer() {
         Spark.port(getHerokuAssignedPort());
@@ -35,6 +36,8 @@ public class MicroServer {
         Spark.post("api/dailySnowDepth", this::processDailySnowDepthRequest);
         Spark.get("api/states", this::processStatesRequest);
         Spark.post("api/stateBounds", this::processStateBoundsRequest);
+        Spark.get("api/updateResorts", this::processUpdateResortsRequest);
+        Spark.get("api/skiAreas", this::processSkiAreasRequest);
     }
 
     private String processConfigRequest(Request request, Response response) {
@@ -61,6 +64,20 @@ public class MicroServer {
         return processPostRequest(StateBounds.class, request, response);
     }
 
+    private String processUpdateResortsRequest(Request request, Response response) {
+        return processGetRequest(new SkiAreaData(), request, response);
+    }
+
+    private String processSkiAreasRequest(Request request, Response response) {
+        String id =
+            request.queryParamOrDefault("id", DEFAULT_QUERY_PARAM);
+        String region =
+            request.queryParamOrDefault("region", DEFAULT_QUERY_PARAM);
+        String name =
+                request.queryParamOrDefault("name", DEFAULT_QUERY_PARAM);
+        return processGetRequest(new SkiAreas(id, region, name), request, response);
+    }
+
     private String processGetRequest(APIHeader requestType, Request request, Response response) {
         log.info("{} request: {}", requestType.getRequestType(), HTTPrequestToJson(request));
         response.type("application/json");
@@ -74,8 +91,12 @@ public class MicroServer {
             String responseBody = jsonConverter.toJson(apiRequest);
             log.trace("{} response: {}", requestType.getRequestType(), responseBody);
             return responseBody;
+        } catch (NumberFormatException e) {
+            log.error("Exception:", e);
+            response.status(400);
+            return request.body();
         } catch (Exception e) {
-            log.error("Exception: {}", e);
+            log.error("Exception:", e);
             response.status(500);
             return request.body();
         }
