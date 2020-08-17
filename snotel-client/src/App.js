@@ -8,7 +8,9 @@ import { Brightness4, BrightnessHigh } from '@material-ui/icons';
 import Routes from './components/Routes'
 
 function App() {
-    const [prefersDarkMode, setPrefersDarkMode] = useState(false);
+    const [prefersDarkMode, setPrefersDarkMode] = useState(
+        window.matchMedia("(prefers-color-scheme: dark)").matches
+    );
     const buttonRef = useRef(null);
 
     const theme = createMuiTheme({
