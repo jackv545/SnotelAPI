@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useLocation, Link as RouterLink } from 'react-router-dom';
 
 import {Container, Grid, Typography, Button, Menu, MenuItem, ButtonBase, useMediaQuery, 
-    Hidden } from '@material-ui/core';
+    Hidden, Chip } from '@material-ui/core';
 import { Skeleton } from '@material-ui/lab';
 import { makeStyles, useTheme } from '@material-ui/styles';
 import { fade } from '@material-ui/core/styles';
@@ -66,6 +66,10 @@ const useStyles = makeStyles((theme) => ({
             }
         }
     },
+    chip: {
+        backgroundColor: theme.palette.type === 'light' 
+            ? theme.palette.grey[400] : theme.palette.grey[700]
+    },
     mt1: {
         marginTop: theme.spacing(1)
     },
@@ -77,6 +81,11 @@ const useStyles = makeStyles((theme) => ({
             marginTop: theme.spacing(2)
         }
     },
+    mtSmUp: {
+        [theme.breakpoints.up('sm')]: {
+            marginTop: `calc(${theme.spacing(4)}px + ${theme.typography.h4.fontSize} - 1px)`
+        }
+    }
 }));
 
 // A custom hook that builds on useLocation to parse the query string
@@ -102,6 +111,22 @@ export default function StateInfo(props) {
     const classes = useStyles();
     const theme = useTheme();
 
+    const [skiAreaCount, setSkiAreaCount] = useState(-1);
+    const [backcountryStationCount, setBackcountryStationCount] = useState(-1);
+    
+    const viewTabChip = (count) => {
+        return (count > -1
+            ? <Chip 
+                size="small" label={count} className={classes.endIcon}
+                classes={{root: classes.chip}}
+            />
+            : <Skeleton 
+                variant="circle" width={32} height={24} 
+                className={classes.endIcon}
+            />
+        );
+    };
+
     const viewTabs = (
         viewOptionKeys.map((viewOption, i) => (
             <Grid 
@@ -121,6 +146,10 @@ export default function StateInfo(props) {
                     } : null}
                 >
                     {viewOptions[viewOption]}
+                    {viewTabChip(
+                        viewOption === viewOptionKeys[0] 
+                            ? skiAreaCount : backcountryStationCount
+                    )}
                 </ButtonBase>
             </Grid>
         ))
@@ -205,7 +234,9 @@ export default function StateInfo(props) {
             .then((response => {
                 if (response.statusCode >= 200 && response.statusCode <= 299) {
                     setStateName(response.body.stateName);
-                    setRegionID(response.body.region)
+                    setRegionID(response.body.region);
+                    setSkiAreaCount(response.body.skiAreaCount);
+                    setBackcountryStationCount(response.body.backcountryStationCount);
                 } else {
                     console.error("Response code: ", response.statusCode, response.statusText);
                 }
@@ -238,7 +269,7 @@ export default function StateInfo(props) {
                 <Grid item xs={12} sm={4}>
                     {listOptions}
                 </Grid>
-                <Grid item xs={12} sm={8}>
+                <Grid item xs={12} sm={8} className={classes.mtSmUp}>
                     {selectedView === viewOptionKeys[0] 
                         ? <SkiAreas stateName={stateName} regionID={regionID}/>
                         : <BackcountryStations 

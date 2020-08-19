@@ -21,7 +21,7 @@ export default function SkiAreas(props) {
         
     }, [props.stateName]);
 
-    const [skiAreas, setSkiAreas] = useState([]);
+    const [skiAreas, setSkiAreas] = useState();
 
     //get stations from stateID
     useEffect(() => {
@@ -45,19 +45,25 @@ export default function SkiAreas(props) {
     
     return (
         <Grid container spacing={1}>
-            {skiAreas.length > 0 
-            ? skiAreas.map((skiArea) => (
-                <Grid item xs={12} sm={12} md={6} key={skiArea.name}>
-                    <Card>
-                        <CardContent>
-                            <Typography variant="inherit" color="secondary" className={classes.name}>
-                                {skiArea.name}
-                            </Typography>
-                        </CardContent>
-                    </Card>
-                </Grid>
-            ))
-            : <ListSkeleton/>}
+            {skiAreas 
+                ? skiAreas.length > 0 
+                    ? skiAreas.map((skiArea) => (
+                        <Grid item xs={12} sm={12} md={6} key={skiArea.name}>
+                            <Card>
+                                <CardContent>
+                                    <Typography 
+                                        variant="inherit" color="secondary" 
+                                        className={classes.name}
+                                    >
+                                        {skiArea.name}
+                                    </Typography>
+                                </CardContent>
+                            </Card>
+                        </Grid>
+                    ))
+                    : null
+                : <ListSkeleton/>
+            }
         </Grid>
     );
 }
