@@ -38,6 +38,7 @@ public class MicroServer {
         Spark.post("api/stateBounds", this::processStateBoundsRequest);
         Spark.get("api/updateResorts", this::processUpdateResortsRequest);
         Spark.get("api/skiAreas", this::processSkiAreasRequest);
+        Spark.get("api/state", this::processStateRequest);
     }
 
     private String processConfigRequest(Request request, Response response) {
@@ -78,6 +79,10 @@ public class MicroServer {
         return processGetRequest(new SkiAreas(id, region, name), request, response);
     }
 
+    private String processStateRequest(Request request, Response response) {
+        return processGetRequest(new State(request.queryParams("state")), request, response);
+    }
+
     private String processGetRequest(APIHeader requestType, Request request, Response response) {
         log.info("{} request: {}", requestType.getRequestType(), HTTPrequestToJson(request));
         response.type("application/json");
@@ -91,7 +96,7 @@ public class MicroServer {
             String responseBody = jsonConverter.toJson(apiRequest);
             log.trace("{} response: {}", requestType.getRequestType(), responseBody);
             return responseBody;
-        } catch (NumberFormatException e) {
+        } catch (NumberFormatException | SQLException e) {
             log.error("Exception:", e);
             response.status(400);
             return request.body();
