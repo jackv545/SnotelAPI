@@ -5,7 +5,7 @@ import Navigation from './Navigation';
 import Home from './Home';
 import WorldMap from './WorldMap';
 import States from './States';
-import StateInfo from './StateInfo';
+import StateInfo from './stateInfo/StateInfo';
 import StationInfo from './StationInfo';
 import Contact from './margins/Contact';
 import Footer from './margins/Footer';
