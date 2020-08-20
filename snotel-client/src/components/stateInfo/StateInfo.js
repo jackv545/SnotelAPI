@@ -230,7 +230,7 @@ export default function StateInfo(props) {
     const [regionID, setRegionID] = useState(0);
 
     useEffect(() => {
-        sendServerRequest(`state?state=${urlParams.state}`)
+        sendServerRequest(`state?state=${urlParams.state}&includeStats=true`)
             .then((response => {
                 if (response.statusCode >= 200 && response.statusCode <= 299) {
                     setStateName(response.body.stateName);
