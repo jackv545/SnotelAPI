@@ -8,7 +8,7 @@ import { makeStyles } from '@material-ui/styles';
 import { Close } from '@material-ui/icons';
 
 import StationMap from './StationMap';
-import { sendServerRequestWithBody } from '../api/restfulAPI';
+import { sendServerRequest, sendServerRequestWithBody } from '../api/restfulAPI';
 
 const useStyles = makeStyles((theme) => ({
     markerInfo: {
@@ -26,12 +26,11 @@ export default function WorldMap(props) {
     let urlParams = useParams();
 
     useEffect(() => {
-        const boundsHeader = { requestType: 'stateBounds', requestVersion: 1 };
         if(urlParams.state) {
-            sendServerRequestWithBody({ ...boundsHeader, state: urlParams.state })
+            sendServerRequest(`state?state=${urlParams.state}&includeStationBounds=true`)
                 .then((response => {
                     if (response.statusCode >= 200 && response.statusCode <= 299) {
-                        setBounds(response.body.stateBounds);
+                        setBounds(response.body.stationBounds);
                     } else {
                         console.error("Response code: ", response.statusCode, response.statusText);
                     }
