@@ -97,16 +97,23 @@ export default function StateInfo(props) {
     const viewOptions = {'ski-areas': 'Ski Areas', backcountry: 'Backcountry'};
     const viewOptionKeys = Object.keys(viewOptions);
     const [selectedView, setSelectedView] = useState(viewOptionKeys[0]);
+
+    const sortOptions = { none: 'None', alphabetical: 'A-Z', elevation: 'Elevation'};
+    const backcountrySortOptions = {...sortOptions, snowDepth: 'Snowpack' };
+    const [selectedSort, setSelectedSort] = useState('alphabetical');
     
     let query = useQuery();
 
     useEffect(() => {
         if(query.get('tab')) {
             setSelectedView(query.get('tab'));
+            if(query.get('tab') === viewOptionKeys[0] && selectedSort === 'snowDepth') {
+                setSelectedSort('alphabetical');
+            }
         } else {
             setSelectedView(viewOptionKeys[0]);
         }
-    }, [query, viewOptionKeys]);
+    }, [query, viewOptionKeys, selectedSort]);
 
     const classes = useStyles();
     const theme = useTheme();
@@ -155,10 +162,6 @@ export default function StateInfo(props) {
         ))
     );
 
-    const sortOptions = { none: 'None', alphabetical: 'A-Z', 
-        elevation: 'Elevation', snowDepth: 'Snowpack' };
-    const [selectedSort, setSelectedSort] = useState('alphabetical');
-
     const [anchorEl, setAnchorEl] = useState(null);
 
     const handleClick = (event) => {
@@ -176,42 +179,44 @@ export default function StateInfo(props) {
 
     const smUp = useMediaQuery(theme => theme.breakpoints.up('sm'));
 
-    const sortSelect = (
-        <div className={classes.mt2smUp}>
-            <Hidden xsDown>
-                <Grid item xs>
-                    <Typography variant="caption">
-                        Sort by:
-                    </Typography>
-                </Grid>
-            </Hidden>
-            <Button
-                fullWidth variant="outlined" aria-controls="sort-menu"
-                aria-haspopup="true"
-                classes={{ label: classes.label, endIcon: classes.endIcon }}
-                onClick={handleClick} endIcon={<ArrowDropDown/>}
-                startIcon={smUp ? null : <Sort/>}
-            >
-                {sortOptions[selectedSort]}
-            </Button>
-            <Menu
-                id="sort-menu" anchorEl={anchorEl} keepMounted
-                open={Boolean(anchorEl)} onClose={handleClose}
-                getContentAnchorEl={null} 
-                anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
-                transformOrigin={{ vertical: "top", horizontal: "center" }}
-            >
-                {Object.keys(sortOptions).map((optionKey) => (
-                    <MenuItem
-                        onClick={() => handleMenuItemClick(optionKey)}
-                        selected={optionKey === selectedSort} key={optionKey}
-                    >
-                        {sortOptions[optionKey]}
-                    </MenuItem>
-                ))}
-            </Menu>
-        </div>
-    );
+    const sortSelect = (sortOptions) => {
+        return(
+            <div className={classes.mt2smUp}>
+                <Hidden xsDown>
+                    <Grid item xs>
+                        <Typography variant="caption">
+                            Sort by:
+                        </Typography>
+                    </Grid>
+                </Hidden>
+                <Button
+                    fullWidth variant="outlined" aria-controls="sort-menu"
+                    aria-haspopup="true"
+                    classes={{ label: classes.label, endIcon: classes.endIcon }}
+                    onClick={handleClick} endIcon={<ArrowDropDown/>}
+                    startIcon={smUp ? null : <Sort/>}
+                >
+                    {sortOptions[selectedSort]}
+                </Button>
+                <Menu
+                    id="sort-menu" anchorEl={anchorEl} keepMounted
+                    open={Boolean(anchorEl)} onClose={handleClose}
+                    getContentAnchorEl={null} 
+                    anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+                    transformOrigin={{ vertical: "top", horizontal: "center" }}
+                >
+                    {Object.keys(sortOptions).map((optionKey) => (
+                        <MenuItem
+                            onClick={() => handleMenuItemClick(optionKey)}
+                            selected={optionKey === selectedSort} key={optionKey}
+                        >
+                            {sortOptions[optionKey]}
+                        </MenuItem>
+                    ))}
+                </Menu>
+            </div>
+        );
+    };
 
     let urlParams = useParams();
 
@@ -252,11 +257,11 @@ export default function StateInfo(props) {
                 </Typography>
             </Grid>
             {viewTabs}
-            {selectedView === viewOptionKeys[1]
-                && <Grid item xs={6} sm={12}>
-                    {sortSelect}
-                </Grid>
-            }
+            <Grid item xs={6} sm={12}>
+                {sortSelect(selectedView === viewOptionKeys[0] 
+                    ? sortOptions : backcountrySortOptions
+                )}
+            </Grid>
             <Grid item xs={6} sm={12}>
                 {mapButton}
             </Grid>
@@ -271,7 +276,9 @@ export default function StateInfo(props) {
                 </Grid>
                 <Grid item xs={12} sm={8} className={classes.mtSmUp}>
                     {selectedView === viewOptionKeys[0] 
-                        ? <SkiAreas stateName={stateName} regionID={regionID}/>
+                        ? <SkiAreas 
+                            stateName={stateName} regionID={regionID} selectedSort={selectedSort}
+                        />
                         : <BackcountryStations 
                             state={urlParams.state} stateName={stateName} regionID={regionID} 
                             selectedSort={selectedSort}

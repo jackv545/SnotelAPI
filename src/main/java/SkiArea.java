@@ -6,7 +6,8 @@ import org.slf4j.LoggerFactory;
 public class SkiArea {
     private final transient Logger log = LoggerFactory.getLogger(SkiArea.class);
 
-    private int id, region;
+    private final int id;
+    private int region;
     private String name;
     private String website;
     private double lat, lng;
@@ -114,6 +115,7 @@ public class SkiArea {
         for (int option : options) {
             if (operatingStatus == option) {
                 validOperatingStatus = true;
+                break;
             }
         }
 
@@ -166,7 +168,7 @@ public class SkiArea {
         return gson.toJson(this);
     }
 
-    public int getId() {
+    public int getID() {
         return id;
     }
 

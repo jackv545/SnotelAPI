@@ -39,9 +39,11 @@ public class SkiAreas extends APIHeader{
     private int size;
 
     private final transient List<Filter> FILTERS;
+    private transient String orderBy;
     private enum SearchFields {
         id, region, name
     }
+
 
     public SkiAreas(String id, String region, String name) {
         this.requestVersion = 1;
@@ -51,6 +53,27 @@ public class SkiAreas extends APIHeader{
         FILTERS.add(new Filter(SearchFields.id.toString(), id));
         FILTERS.add( new Filter(SearchFields.region.toString(), region));
         FILTERS.add(new Filter(SearchFields.name.toString(), name));
+
+        orderBy = "none";
+    }
+
+    public SkiAreas(String id, String region, String name, String orderBy) {
+        this(id, region, name);
+        if(orderBy.equals("name") || orderBy.equals("elevation")) {
+            this.orderBy = orderBy;
+        } else {
+            this.orderBy = "none";
+        }
+    }
+
+    private String orderByClause() {
+        if(orderBy.equals("none")) {
+            return "";
+        } else if(orderBy.equals("elevation")) {
+            return "ORDER BY \"topElevation\" DESC";
+        } else {
+            return String.format("ORDER BY %s", orderBy);
+        }
     }
 
     private String query() {
@@ -66,6 +89,7 @@ public class SkiAreas extends APIHeader{
                 }
             }
         }
+        query = String.format("%s %s", query, orderByClause());
         return query;
     }
 

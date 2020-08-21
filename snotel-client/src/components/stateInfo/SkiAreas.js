@@ -4,12 +4,18 @@ import { Grid, Card, CardContent, Typography } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 
 import { sendServerRequest } from '../../api/restfulAPI';
-// import { commasInNumber } from '../../utils/NumberCommas';
+import { commasInNumber } from '../../utils/NumberCommas';
 import ListSkeleton from './ListSkeleton';
 
 const useStyles = makeStyles((theme) => ({
     name: {
         fontWeight: 'bold'
+    },
+    mt2: {
+        marginTop: theme.spacing(2)
+    },
+    mt4: {
+        marginTop: theme.spacing(4)
     }
 }));
 
@@ -27,7 +33,11 @@ export default function SkiAreas(props) {
     useEffect(() => {
         let isMounted = true;
 
-        sendServerRequest(`skiAreas?region=${props.regionID}`)
+        const orderBy = props.selectedSort 
+            ? props.selectedSort === 'alphabetical' ? 'name' : props.selectedSort
+            : null;
+
+        sendServerRequest(`skiAreas?region=${props.regionID}&orderBy=${orderBy}`)
             .then((response => {
                 if (response.statusCode >= 200 && response.statusCode <= 299) {
                     if(isMounted) {
@@ -39,9 +49,37 @@ export default function SkiAreas(props) {
             })
         );
         return () => { isMounted = false };
-    }, [props.regionID]);
+    }, [props.regionID, props.selectedSort]);
 
     const classes = useStyles();
+
+    const skiAreaInfo = (skiArea) => (
+        skiArea.topElevation !== 0 
+            ? <Grid container spacing={1} className={classes.mt2}>
+                {[skiArea.topElevation, skiArea.verticalDrop].map((value, i) => (
+                    <Grid 
+                        item xs={12} key={i === 0 ? 'elevation' : 'elevation'}
+                    >
+                        <Grid container>
+                            <Grid item xs={6}>
+                                <Typography variant="body2">
+                                    {`${i === 0 ? 'Top Elevation:' : 'Vertical Drop:'}`}
+                                </Typography>
+                            </Grid>
+                            <Grid item xs>
+                                <Typography variant="body2">
+                                    {`${commasInNumber(value)} m`}
+                                </Typography>
+                            </Grid>
+                        </Grid>
+                    </Grid>
+                ))}
+            </Grid>
+            : <Typography className={classes.mt4} variant="caption" paragraph>
+                No elevation information available.
+            </Typography>
+        
+    );
     
     return (
         <Grid container spacing={1}>
@@ -57,6 +95,7 @@ export default function SkiAreas(props) {
                                     >
                                         {skiArea.name}
                                     </Typography>
+                                    {skiAreaInfo(skiArea)}
                                 </CardContent>
                             </Card>
                         </Grid>

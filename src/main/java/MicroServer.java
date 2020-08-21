@@ -35,7 +35,6 @@ public class MicroServer {
         Spark.post("api/snotel", this::processSnotelRequest);
         Spark.post("api/dailySnowDepth", this::processDailySnowDepthRequest);
         Spark.get("api/states", this::processStatesRequest);
-        Spark.post("api/stateBounds", this::processStateBoundsRequest);
         Spark.get("api/updateResorts", this::processUpdateResortsRequest);
         Spark.get("api/skiAreas", this::processSkiAreasRequest);
         Spark.get("api/state", this::processStateRequest);
@@ -61,10 +60,6 @@ public class MicroServer {
         return processGetRequest(new States(), request, response);
     }
 
-    private String processStateBoundsRequest(Request request, Response response) {
-        return processPostRequest(StateBounds.class, request, response);
-    }
-
     private String processUpdateResortsRequest(Request request, Response response) {
         return processGetRequest(new SkiAreaData(), request, response);
     }
@@ -76,11 +71,22 @@ public class MicroServer {
             request.queryParamOrDefault("region", DEFAULT_QUERY_PARAM);
         String name =
                 request.queryParamOrDefault("name", DEFAULT_QUERY_PARAM);
-        return processGetRequest(new SkiAreas(id, region, name), request, response);
+        String orderBy =
+            request.queryParamOrDefault("orderBy", "none");
+        return processGetRequest(new SkiAreas(id, region, name, orderBy), request, response);
     }
 
     private String processStateRequest(Request request, Response response) {
-        return processGetRequest(new State(request.queryParams("state")), request, response);
+        String state = request.queryParams("state");
+        String includeStats =
+            request.queryParamOrDefault("includeStats", "false");
+        String includeBounds =
+            request.queryParamOrDefault("includeStationBounds", "false");
+        String includeSkiAreaBounds =
+            request.queryParamOrDefault("includeSkiAreaBounds", "false");
+        return processGetRequest(
+            new State(state, includeStats, includeBounds, includeSkiAreaBounds), request, response
+        );
     }
 
     private String processGetRequest(APIHeader requestType, Request request, Response response) {
