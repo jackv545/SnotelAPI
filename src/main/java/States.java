@@ -1,52 +1,106 @@
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.Statement;
+import java.sql.*;
 
-import java.util.LinkedHashMap;
+import java.util.*;
 
 public class States extends APIHeader{
     private final transient Logger log = LoggerFactory.getLogger(States.class);
 
+    private class StateInfo {
+        private String stateName;
+        private int count; //number of stations in state
+        private String name; //top snowpack in state station name
+        private int snowDepth;
+        private String triplet;
+        private String urlName;
+
+        public StateInfo(String stateName, String name, int snowDepth, String triplet, String urlName) {
+            this.stateName = stateName;
+            this.count = 0;
+            this.name = name;
+            this.snowDepth = snowDepth;
+            this.triplet = triplet;
+            this.urlName = urlName;
+        }
+
+        public void setCount(int stationCount, Integer skiAreaCount) {
+            if(skiAreaCount == null) {
+                count = stationCount;
+            } else {
+                count = stationCount + skiAreaCount;
+            }
+        }
+    }
+
     private LinkedHashMap<String, StateInfo> states;
+    private transient Queue<Integer> stationCount;
+    private transient Map<String, Integer> skiAreaCount;
 
     public States() {
         this.requestVersion = 1;
         this.requestType = "states";
     }
 
+    private void setStationCount(Connection conn) throws SQLException {
+        stationCount = new LinkedList<>();
+        String query = "SELECT COUNT(triplet), state FROM stations GROUP BY state ORDER BY state";
+
+        try(
+            Statement stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery(query);
+        ) {
+            while(rs.next()) {
+                stationCount.add(rs.getInt("count"));
+            }
+        }
+    }
+
+    private void setSkiAreaCount(Connection conn) throws SQLException {
+        skiAreaCount = new HashMap<>();
+        String query = "SELECT COUNT(\"skiAreas\".id), state FROM \"skiAreas\" " +
+            "INNER JOIN states ON \"skiAreas\".region = states.id " +
+            "WHERE \"operatingStatus\"=1 AND \"hasDownhill\"=true GROUP BY state";
+
+        try(
+            Statement stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery(query);
+        ) {
+            while (rs.next()) {
+                skiAreaCount.put(rs.getString("state"), rs.getInt("count"));
+            }
+        }
+    }
+
     @Override
     public void buildResponse() throws Exception {
         states = new LinkedHashMap<>();
+        String query = "SELECT DISTINCT ON (state) state, \"stateName\", name, \"snowDepth\", " +
+            "triplet, \"urlName\" FROM stations INNER JOIN states USING(state) " +
+            "ORDER BY state, \"snowDepth\" DESC";
         try (
-                Connection conn = Stations.getConnection();
+            Connection conn = Stations.getConnection();
 
-                Statement st1 = conn.createStatement();
-                ResultSet stationCount = st1.executeQuery(
-                        "SELECT state, statename, COUNT(state) FROM stations GROUP BY state, " +
-                                "stateName ORDER BY state;"
-                );
-
-                Statement st2 = conn.createStatement();
-                ResultSet stateTopSnowpack = st2.executeQuery(
-                        "SELECT DISTINCT ON (state) state, name, snowdepth, triplet," +
-                                "\"urlName\" FROM Stations ORDER BY state, snowdepth DESC;"
-                );
+            Statement stmt = conn.createStatement();
+            ResultSet stateTopSnowpack = stmt.executeQuery(query);
         ) {
-            while(stationCount.next() && stateTopSnowpack.next()) {
+            setStationCount(conn);
+            setSkiAreaCount(conn);
+
+            while(stateTopSnowpack.next()) {
+                String state = stateTopSnowpack.getString("state");
+
                 StateInfo stateInfo = new StateInfo(
-                        stationCount.getString("statename"),
-                        stationCount.getInt("count"),
-                        stateTopSnowpack.getString("name"),
-                        stateTopSnowpack.getInt("snowdepth"),
-                        stateTopSnowpack.getString("triplet"),
-                        stateTopSnowpack.getString("urlName")
+                    stateTopSnowpack.getString("stateName"),
+                    stateTopSnowpack.getString("name"),
+                    stateTopSnowpack.getInt("snowdepth"),
+                    stateTopSnowpack.getString("triplet"),
+                    stateTopSnowpack.getString("urlName")
                 );
-                states.put(stationCount.getString("state"), stateInfo);
+                stateInfo.setCount(stationCount.remove(), skiAreaCount.get(state));
+                states.put(state, stateInfo);
             }
         }
-
     }
 }
