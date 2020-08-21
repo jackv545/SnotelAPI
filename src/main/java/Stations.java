@@ -46,7 +46,12 @@ public class Stations extends APIHeader {
     }
 
     private String queryString() throws SQLException {
-        String query = "SELECT * FROM stations";
+        String[] columns = new String[] {"elevation", "lat", "lng", "timezone", "triplet",
+                "wind", "\"snowDepth\"", "s.state", "name", "st.\"stateName\"", "\"urlName\""};
+        String query = String.format("SELECT %s ", String.join(", ", columns));
+        query = String.format(
+            "%sFROM stations s INNER JOIN states st ON s.state = st.state", query
+        );
         switch (searchField) {
             case "name":
                 String column = "name";
@@ -59,7 +64,7 @@ public class Stations extends APIHeader {
                 query += " WHERE " + column + like;
                 break;
             case "state":
-                column="state";
+                column="s.state";
                 like = "='" + searchTerm + "'";
                 query += " WHERE " + column + like;
                 break;
@@ -77,7 +82,7 @@ public class Stations extends APIHeader {
                 query += " ORDER BY elevation DESC";
                 break;
             case "snowDepth":
-                query += " ORDER BY snowdepth DESC";
+                query += " ORDER BY \"snowDepth\" DESC";
                 break;
             case "":
             case "none":
@@ -100,12 +105,12 @@ public class Stations extends APIHeader {
         ) {
             while(rs.next()) {
                 Station station = new Station(
-                    rs.getInt("elevation"),
-                    rs.getDouble("lat"), rs.getDouble("lng"),
-                    rs.getInt("timezone"), rs.getString("triplet"),
-                    rs.getBoolean("wind"), rs.getInt("snowdepth"),
-                    rs.getString("state"), rs.getString("name"),
-                    rs.getString("statename"), rs.getString("urlName")
+                    rs.getInt("elevation"), rs.getDouble("lat"),
+                    rs.getDouble("lng"), rs.getInt("timezone"),
+                    rs.getString("triplet"), rs.getBoolean("wind"),
+                    rs.getInt("snowDepth"), rs.getString("state"),
+                    rs.getString("name"), rs.getString("stateName"),
+                    rs.getString("urlName")
                 );
                 stations.add(station);
             }
