@@ -72,7 +72,7 @@ export default function StationInfo(props) {
     );
 
     return(
-        <Container maxWidth="md">
+        <Container maxWidth="lg">
             <Grid container spacing={1} className={classes.header}>
                 <Grid item xs={12} sm={12} md={4}>
                     <Typography variant="h4" component="h1">

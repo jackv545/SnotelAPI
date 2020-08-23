@@ -134,7 +134,7 @@ export default function Contact(props) {
     );
 
     return(
-        <Container maxWidth="md" className={classes.container}>
+        <Container maxWidth="lg" className={classes.container}>
             <Paper className={classes.paper}>
                 <Typography variant="h6" component="h1">
                     Contact

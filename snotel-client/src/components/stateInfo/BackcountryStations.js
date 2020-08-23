@@ -80,7 +80,7 @@ export default function BackcountryStations(props) {
         <Grid container spacing={1}>
             {stations.length > 0 
             ? stations.map((station) => (
-                <Grid item xs={12} sm={12} md={6} key={station.urlName}>
+                <Grid item xs={12} sm={12} md={6} lg={4} key={station.urlName}>
                     <Card>
                         <CardContent>
                             <Link

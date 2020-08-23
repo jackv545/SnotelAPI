@@ -269,7 +269,7 @@ export default function StateInfo(props) {
     );
 
     return (
-        <Container maxWidth="md" className={classes.container}>
+        <Container maxWidth="lg" className={classes.container}>
             <Grid container spacing={2}>
                 <Grid item xs={12} sm={4}>
                     {listOptions}

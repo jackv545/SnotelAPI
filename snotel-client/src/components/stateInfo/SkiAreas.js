@@ -58,7 +58,7 @@ export default function SkiAreas(props) {
             ? <Grid container spacing={1} className={classes.mt2}>
                 {[skiArea.topElevation, skiArea.verticalDrop].map((value, i) => (
                     <Grid 
-                        item xs={12} key={i === 0 ? 'elevation' : 'elevation'}
+                        item xs={12} key={i === 0 ? 'elevation' : 'vertical drop'}
                     >
                         <Grid container>
                             <Grid item xs={6}>
@@ -86,7 +86,7 @@ export default function SkiAreas(props) {
             {skiAreas 
                 ? skiAreas.length > 0 
                     ? skiAreas.map((skiArea) => (
-                        <Grid item xs={12} sm={12} md={6} key={skiArea.name}>
+                        <Grid item xs={12} sm={12} md={6} lg={4} key={skiArea.name}>
                             <Card>
                                 <CardContent>
                                     <Typography 

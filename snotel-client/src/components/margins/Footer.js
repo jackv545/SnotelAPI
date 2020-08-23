@@ -27,7 +27,7 @@ export default function Footer(props) {
 
     return(
         <Paper component="footer" className={classes.footer}>
-            <Container maxWidth="md" className={classes.container}>
+            <Container maxWidth="lg" className={classes.container}>
                 <Divider className={classes.divider}/>
                 <Grid container alignItems="center" justify="space-evenly">
                     <Grid item>

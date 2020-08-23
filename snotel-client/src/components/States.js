@@ -82,11 +82,11 @@ export default function States(props) {
     );
     
     return(
-        <Container maxWidth="md" className={classes.container}>
+        <Container maxWidth="lg" className={classes.container}>
             <Grid container spacing={1}>
                 {Object.keys(stateInfo).length > 0
                     ? Object.keys(stateInfo).map((state) => (
-                        <Grid item xs={12} sm={6} md={4} key={state}>
+                        <Grid item xs={12} sm={6} md={4} lg={3} key={state}>
                             <Card className={classes.card}>
                                 <CardContent>
                                     {cardHeader(state, stateInfo[state].stateName)}
