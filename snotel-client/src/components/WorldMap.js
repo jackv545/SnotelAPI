@@ -9,19 +9,32 @@ import { Close } from '@material-ui/icons';
 
 import StationMap from './StationMap';
 import { sendServerRequest, sendServerRequestWithBody } from '../api/restfulAPI';
+import StateSelect from './map/StateSelect';
 
 const useStyles = makeStyles((theme) => ({
     markerInfo: {
         padding: theme.spacing(1),
         marginTop: theme.spacing(1)
+    },
+    mt2smUp: {
+        [theme.breakpoints.up('sm')]: {
+            marginTop: theme.spacing(2)
+        }
+    },
+    mt3: {
+        marginTop: theme.spacing(3)
     }
 }));
 
+export const SELECTED_STATE_DEFAULT = {key: 'all', name: 'All'};
+const BOUNDS_DEFAULT = [[70.37, -164.29], [32.92, -103.79]];
+
 export default function WorldMap(props) {
     const [stations, setStations] = useState([]);
+    const [stateInfo, setStateInfo] = useState({});
     const [stationSelected, setStationSelected] = useState(false);
     const [selectedStationMarker, setSelectedStationMarker] = useState(null);
-    const [bounds, setBounds] = useState([[70.37, -164.29], [32.92, -103.79]]);
+    const [bounds, setBounds] = useState(BOUNDS_DEFAULT);
 
     let urlParams = useParams();
 
@@ -30,12 +43,21 @@ export default function WorldMap(props) {
             sendServerRequest(`state?state=${urlParams.state}&includeStationBounds=true`)
                 .then((response => {
                     if (response.statusCode >= 200 && response.statusCode <= 299) {
+                        setStateInfo(
+                            (({ state, stateName }) => ({ state, stateName }))(response.body)
+                        );
                         setBounds(response.body.stationBounds);
                     } else {
                         console.error("Response code: ", response.statusCode, response.statusText);
                     }
                 })
             );
+        } else {
+            setStateInfo({
+                state: SELECTED_STATE_DEFAULT.key,
+                stateName: SELECTED_STATE_DEFAULT.name
+            });
+            setBounds(BOUNDS_DEFAULT);
         }
 
         const stationsHeader = { requestType: 'stations', requestVersion: 1 };
@@ -45,18 +67,22 @@ export default function WorldMap(props) {
             .then((response => {
                 if (response.statusCode >= 200 && response.statusCode <= 299) {
                     setStations(response.body.stations)
-
-                    if(urlParams.state) {
-                        document.title = `${response.body.stations[0].stateName} Map | Snotel`;
-                    } else {
-                        document.title = 'World Map | Snotel';
-                    }
                 } else {
                     console.error("Response code: ", response.statusCode, response.statusText);
                 }
             })
         );
     }, [urlParams]);
+
+    useEffect(() => {
+        if(Object.keys(stateInfo).length > 0) {
+            if(stateInfo.state !== SELECTED_STATE_DEFAULT.key) {
+                document.title = `${stateInfo.stateName} Map | Snotel`;
+            } else {
+                document.title = 'World Map | Snotel';
+            }
+        } 
+    }, [stateInfo]);
 
     const deselectStation = () => {
         setStationSelected(false);
@@ -117,17 +143,24 @@ export default function WorldMap(props) {
             </Paper>
         </Collapse>
     );
-    
+
     return(
-        <Container maxWidth="md">
-            <StationMap 
-                all bounds={bounds} 
-                stations={stations} prefersDarkMode={props.prefersDarkMode}
-                setStationSelected={setStationSelected}
-                selectedStationMarker={selectedStationMarker}
-                setSelectedStationMarker={setSelectedStationMarker}
-            />
-            {markerCollapse}
+        <Container maxWidth="lg">
+            <Grid container spacing={1}>
+                <Grid item xs={12} sm={12} md={3} className={classes.mt3}>
+                    <StateSelect state={stateInfo.state}/>
+                </Grid>
+                <Grid item xs={12} sm={12} md={9} className={classes.mt2smUp}>
+                    <StationMap 
+                        all bounds={bounds}
+                        stations={stations} prefersDarkMode={props.prefersDarkMode}
+                        setStationSelected={setStationSelected}
+                        selectedStationMarker={selectedStationMarker}
+                        setSelectedStationMarker={setSelectedStationMarker}
+                    />
+                    {markerCollapse}
+                </Grid>
+            </Grid>
         </Container>
     );
 }
