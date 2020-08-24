@@ -89,14 +89,15 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 // A custom hook that builds on useLocation to parse the query string
-function useQuery() {
+export function useQuery() {
     return new URLSearchParams(useLocation().search);
 }
 
+export const VIEW_OPTIONS = {'ski-areas': 'Ski Areas', backcountry: 'Backcountry'};
+export const VIEW_OPTION_KEYS = Object.keys(VIEW_OPTIONS);
+
 export default function StateInfo(props) {
-    const viewOptions = {'ski-areas': 'Ski Areas', backcountry: 'Backcountry'};
-    const viewOptionKeys = Object.keys(viewOptions);
-    const [selectedView, setSelectedView] = useState(viewOptionKeys[0]);
+    const [selectedView, setSelectedView] = useState(VIEW_OPTION_KEYS[0]);
 
     const sortOptions = { none: 'None', alphabetical: 'A-Z', elevation: 'Elevation'};
     const backcountrySortOptions = {...sortOptions, snowDepth: 'Snowpack' };
@@ -107,13 +108,13 @@ export default function StateInfo(props) {
     useEffect(() => {
         if(query.get('tab')) {
             setSelectedView(query.get('tab'));
-            if(query.get('tab') === viewOptionKeys[0] && selectedSort === 'snowDepth') {
+            if(query.get('tab') === VIEW_OPTION_KEYS[0] && selectedSort === 'snowDepth') {
                 setSelectedSort('alphabetical');
             }
         } else {
-            setSelectedView(viewOptionKeys[0]);
+            setSelectedView(VIEW_OPTION_KEYS[0]);
         }
-    }, [query, viewOptionKeys, selectedSort]);
+    }, [query, selectedSort]);
 
     const classes = useStyles();
     const theme = useTheme();
@@ -135,7 +136,7 @@ export default function StateInfo(props) {
     };
 
     const viewTabs = (
-        viewOptionKeys.map((viewOption, i) => (
+        VIEW_OPTION_KEYS.map((viewOption, i) => (
             <Grid 
                 item xs={6} sm={12} key={viewOption} 
                 className={i === 0 ? classes.mt2smUp : null}
@@ -152,9 +153,9 @@ export default function StateInfo(props) {
                         pointerEvents: 'none'
                     } : null}
                 >
-                    {viewOptions[viewOption]}
+                    {VIEW_OPTIONS[viewOption]}
                     {viewTabChip(
-                        viewOption === viewOptionKeys[0] 
+                        viewOption === VIEW_OPTION_KEYS[0] 
                             ? skiAreaCount : backcountryStationCount
                     )}
                 </ButtonBase>
@@ -258,7 +259,7 @@ export default function StateInfo(props) {
             </Grid>
             {viewTabs}
             <Grid item xs={6} sm={12}>
-                {sortSelect(selectedView === viewOptionKeys[0] 
+                {sortSelect(selectedView === VIEW_OPTION_KEYS[0] 
                     ? sortOptions : backcountrySortOptions
                 )}
             </Grid>
@@ -275,7 +276,7 @@ export default function StateInfo(props) {
                     {listOptions}
                 </Grid>
                 <Grid item xs={12} sm={8} className={classes.mtSmUp}>
-                    {selectedView === viewOptionKeys[0] 
+                    {selectedView === VIEW_OPTION_KEYS[0] 
                         ? <SkiAreas 
                             stateName={stateName} regionID={regionID} selectedSort={selectedSort}
                         />

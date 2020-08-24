@@ -6,7 +6,7 @@ import { Container, Grid, Typography, Table, TableBody, TableCell, TableContaine
 import { Skeleton } from '@material-ui/lab';
 import { makeStyles } from '@material-ui/styles';
 
-import StationMap from './StationMap';
+import StationMap from './map/StationMap';
 import { sendServerRequestWithBody } from '../api/restfulAPI';
 import { commasInNumber } from '../utils/NumberCommas';
 

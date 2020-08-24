@@ -3,7 +3,7 @@ import { Switch, Route } from 'react-router-dom';
 
 import Navigation from './Navigation';
 import Home from './Home';
-import WorldMap from './WorldMap';
+import WorldMap from './map/WorldMap';
 import States from './States';
 import StateInfo from './stateInfo/StateInfo';
 import StationInfo from './StationInfo';

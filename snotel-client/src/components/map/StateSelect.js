@@ -5,7 +5,7 @@ import { Button, Menu, MenuItem, Typography, Grid } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { ArrowDropDown, List } from '@material-ui/icons';
 
-import { SELECTED_STATE_DEFAULT } from '../WorldMap.js';
+import { SELECTED_STATE_DEFAULT } from './WorldMap.js';
 import { sendServerRequest } from '../../api/restfulAPI';
 
 const useStyles = makeStyles((theme) => ({

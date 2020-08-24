@@ -7,7 +7,7 @@ import { Map, Marker, TileLayer } from 'react-leaflet';
 import MarkerClusterGroup from 'react-leaflet-markercluster';
 
 import './LeafletCluster.css';
-import { sendServerRequestWithBody } from '../api/restfulAPI'
+import { sendServerRequestWithBody } from '../../api/restfulAPI'
 
 import { withStyles } from '@material-ui/core/styles';
 
@@ -39,7 +39,7 @@ const icon = (prefersDarkMode, selected) => {
 
     return (
         new L.icon({
-            iconUrl: require(`../images/map-marker-${markerType}.png`),
+            iconUrl: require(`../../images/map-marker-${markerType}.png`),
             iconAnchor: [18, 34],
             popupAnchor: [0, -32],
             shadowUrl: null

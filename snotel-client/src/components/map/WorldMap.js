@@ -7,9 +7,10 @@ import { Skeleton } from '@material-ui/lab';
 import { makeStyles } from '@material-ui/styles';
 import { Close } from '@material-ui/icons';
 
+import { sendServerRequest, sendServerRequestWithBody } from '../../api/restfulAPI';
+import { useQuery, VIEW_OPTION_KEYS } from '../stateInfo/StateInfo';
 import StationMap from './StationMap';
-import { sendServerRequest, sendServerRequestWithBody } from '../api/restfulAPI';
-import StateSelect from './map/StateSelect';
+import StateSelect from './StateSelect';
 
 const useStyles = makeStyles((theme) => ({
     markerInfo: {
@@ -30,59 +31,103 @@ export const SELECTED_STATE_DEFAULT = {key: 'all', name: 'All'};
 const BOUNDS_DEFAULT = [[70.37, -164.29], [32.92, -103.79]];
 
 export default function WorldMap(props) {
-    const [stations, setStations] = useState([]);
-    const [stateInfo, setStateInfo] = useState({});
-    const [stationSelected, setStationSelected] = useState(false);
-    const [selectedStationMarker, setSelectedStationMarker] = useState(null);
+    const [selectedView, setSelectedView] = useState(null);
+
+    let query = useQuery();
+
+    //set selected view based on url search parameter
+    useEffect(() => {
+        if(query.get('tab')) {
+            setSelectedView(query.get('tab'));
+        } else {
+            setSelectedView(VIEW_OPTION_KEYS[1]);
+        }
+    }, [query]);
+
+    const [state, setState] = useState('');
+    const [stateName, setStateName] = useState('');
+    const [region, setRegion] = useState(null);
     const [bounds, setBounds] = useState(BOUNDS_DEFAULT);
 
     let urlParams = useParams();
 
     useEffect(() => {
-        if(urlParams.state) {
-            sendServerRequest(`state?state=${urlParams.state}&includeStationBounds=true`)
+        const boundsParameters = () => {
+            const stations = `&includeStationBounds=${selectedView === VIEW_OPTION_KEYS[1]}`;
+            const skiAreas = `&includeSkiAreaBounds=${selectedView === VIEW_OPTION_KEYS[0]}`;
+            return `${stations}${skiAreas}`;
+        }
+
+        if(urlParams.state && selectedView) {
+            sendServerRequest(`state?state=${urlParams.state}${boundsParameters()}`)
                 .then((response => {
                     if (response.statusCode >= 200 && response.statusCode <= 299) {
-                        setStateInfo(
-                            (({ state, stateName }) => ({ state, stateName }))(response.body)
-                        );
-                        setBounds(response.body.stationBounds);
+                        setState(response.body.state);
+                        setStateName(response.body.stateName);
+                        setRegion(response.body.region);
+                        if(selectedView === VIEW_OPTION_KEYS[0]) {
+                            setBounds(response.body.skiAreaBounds);
+                        } else if(selectedView === VIEW_OPTION_KEYS[1]) {
+                            setBounds(response.body.stationBounds);
+                        }
                     } else {
                         console.error("Response code: ", response.statusCode, response.statusText);
                     }
                 })
             );
         } else {
-            setStateInfo({
-                state: SELECTED_STATE_DEFAULT.key,
-                stateName: SELECTED_STATE_DEFAULT.name
-            });
+            setState(SELECTED_STATE_DEFAULT.key);
+            setStateName(SELECTED_STATE_DEFAULT.name);
             setBounds(BOUNDS_DEFAULT);
         }
+    }, [urlParams, selectedView]);
 
-        const stationsHeader = { requestType: 'stations', requestVersion: 1 };
-        const search = urlParams.state 
-            ? { searchField: 'state', searchTerm: urlParams.state} : null;
-        sendServerRequestWithBody({...stationsHeader, ...search})
-            .then((response => {
-                if (response.statusCode >= 200 && response.statusCode <= 299) {
-                    setStations(response.body.stations)
-                } else {
-                    console.error("Response code: ", response.statusCode, response.statusText);
-                }
-            })
-        );
-    }, [urlParams]);
-
+    //set document title
     useEffect(() => {
-        if(Object.keys(stateInfo).length > 0) {
-            if(stateInfo.state !== SELECTED_STATE_DEFAULT.key) {
-                document.title = `${stateInfo.stateName} Map | Snotel`;
+        if(stateName.length > 0) {
+            if(state !== SELECTED_STATE_DEFAULT.key) {
+                document.title = `${stateName} Map | Snotel`;
             } else {
                 document.title = 'World Map | Snotel';
             }
         } 
-    }, [stateInfo]);
+    }, [state, stateName]);
+
+    const [stations, setStations] = useState([]);
+
+    useEffect(() => {
+        const dependenciesSet = state.length > 0 && region; //ensure request is only sent once
+
+        if(selectedView === VIEW_OPTION_KEYS[0] && dependenciesSet) {
+            sendServerRequest(`skiAreas?region=${region}`)
+                .then((response => {
+                    if (response.statusCode >= 200 && response.statusCode <= 299) {
+                        setStations(response.body.skiAreas)
+                    } else {
+                        console.error("Response code: ", response.statusCode, response.statusText);
+                    }
+                })
+            );
+        } else if (selectedView === VIEW_OPTION_KEYS[1] && dependenciesSet) {
+            const stationsHeader = { requestType: 'stations', requestVersion: 1 };
+            const search = state !== SELECTED_STATE_DEFAULT.key
+                ? { searchField: 'state', searchTerm: state} : null;
+
+            sendServerRequestWithBody({...stationsHeader, ...search})
+                .then((response => {
+                    if (response.statusCode >= 200 && response.statusCode <= 299) {
+                        setStations(response.body.stations)
+                    } else {
+                        console.error("Response code: ", response.statusCode, response.statusText);
+                    }
+                })
+            );
+        }
+        
+    }, [selectedView, state, region]);
+
+    const [stationSelected, setStationSelected] = useState(false);
+    const [selectedStationMarker, setSelectedStationMarker] = useState(null);
 
     const deselectStation = () => {
         setStationSelected(false);
@@ -148,7 +193,7 @@ export default function WorldMap(props) {
         <Container maxWidth="lg">
             <Grid container spacing={1}>
                 <Grid item xs={12} sm={12} md={3} className={classes.mt3}>
-                    <StateSelect state={stateInfo.state}/>
+                    <StateSelect state={state}/>
                 </Grid>
                 <Grid item xs={12} sm={12} md={9} className={classes.mt2smUp}>
                     <StationMap 
