@@ -94,7 +94,7 @@ export default function BackcountryStations(props) {
                     </Card>
                 </Grid>
             ))
-            : <ListSkeleton/>}
+            : <ListSkeleton count={18} height={128}/>}
         </Grid>
     );
 }

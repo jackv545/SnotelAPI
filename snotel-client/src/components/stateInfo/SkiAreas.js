@@ -101,7 +101,7 @@ export default function SkiAreas(props) {
                         </Grid>
                     ))
                     : null
-                : <ListSkeleton/>
+                : <ListSkeleton count={12} height={128}/>
             }
         </Grid>
     );
