@@ -1,14 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 
-import { Container, Grid, Collapse, Paper, Typography, IconButton, Button } 
-    from '@material-ui/core';
-import { Skeleton } from '@material-ui/lab';
+import { Container, Grid } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
-import { Close } from '@material-ui/icons';
 
 import { sendServerRequest, sendServerRequestWithBody } from '../../api/restfulAPI';
-import { useQuery, VIEW_OPTION_KEYS } from '../stateInfo/StateInfo';
+import { VIEW_OPTION_KEYS, useQuery, ViewTabs } from '../margins/ViewTabs';
 import StationMap from './StationMap';
 import StateSelect from './StateSelect';
 
@@ -17,8 +14,12 @@ const useStyles = makeStyles((theme) => ({
         padding: theme.spacing(1),
         marginTop: theme.spacing(1)
     },
-    mt2smUp: {
-        [theme.breakpoints.up('sm')]: {
+    mt1: {
+        marginTop: theme.spacing(1)
+    },
+    mt1mt2mdUp: {
+        marginTop: theme.spacing(1),
+        [theme.breakpoints.up('md')]: {
             marginTop: theme.spacing(2)
         }
     },
@@ -39,14 +40,14 @@ export default function WorldMap(props) {
     useEffect(() => {
         if(query.get('tab')) {
             setSelectedView(query.get('tab'));
-        } else {
+        } else if(!selectedView) {
             setSelectedView(VIEW_OPTION_KEYS[1]);
         }
-    }, [query]);
+    }, [query, selectedView]);
 
     const [state, setState] = useState('');
     const [stateName, setStateName] = useState('');
-    const [region, setRegion] = useState(null);
+    const [region, setRegion] = useState(-1);
     const [bounds, setBounds] = useState(BOUNDS_DEFAULT);
 
     let urlParams = useParams();
@@ -75,9 +76,10 @@ export default function WorldMap(props) {
                     }
                 })
             );
-        } else {
+        } else if(!urlParams.state) {
             setState(SELECTED_STATE_DEFAULT.key);
             setStateName(SELECTED_STATE_DEFAULT.name);
+            setRegion(0);
             setBounds(BOUNDS_DEFAULT);
         }
     }, [urlParams, selectedView]);
@@ -96,10 +98,10 @@ export default function WorldMap(props) {
     const [stations, setStations] = useState([]);
 
     useEffect(() => {
-        const dependenciesSet = state.length > 0 && region; //ensure request is only sent once
+        const dependenciesSet = state.length > 0 && region > -1; //ensure request is only sent once
 
         if(selectedView === VIEW_OPTION_KEYS[0] && dependenciesSet) {
-            sendServerRequest(`skiAreas?region=${region}`)
+            sendServerRequest(region ? `skiAreas?region=${region}` : 'skiAreas')
                 .then((response => {
                     if (response.statusCode >= 200 && response.statusCode <= 299) {
                         setStations(response.body.skiAreas)
@@ -126,84 +128,22 @@ export default function WorldMap(props) {
         
     }, [selectedView, state, region]);
 
-    const [stationSelected, setStationSelected] = useState(false);
-    const [selectedStationMarker, setSelectedStationMarker] = useState(null);
-
-    const deselectStation = () => {
-        setStationSelected(false);
-        setSelectedStationMarker(null);
-    }
-
     const classes = useStyles();
-
-    const stationNameAndLocation = (
-        <Typography>
-            {selectedStationMarker === null
-            ? <Skeleton width="15ch"/> 
-            : `${selectedStationMarker.name}, ${selectedStationMarker.state}`}
-        </Typography>
-    );
-
-    const stationLatLng = (
-        <Typography variant="body2">
-            {selectedStationMarker === null 
-            ? <Skeleton width="15ch"/>
-            : `(${selectedStationMarker.lat}, ${selectedStationMarker.lng})`}
-        </Typography>
-    );
-
-    const markerInfo = (
-        <Grid container direction="column" spacing={1}>
-            <Grid item>
-                {stationNameAndLocation}
-            </Grid>
-            <Grid item>
-                {stationLatLng}
-            </Grid>
-            <Grid item>
-                <Button
-                    variant="contained" color="secondary" 
-                    component={Link} to={selectedStationMarker 
-                        ? `/location/${selectedStationMarker.urlName}` : ''}
-                >
-                    Snow Report
-                </Button>
-            </Grid>
-        </Grid>
-    );
-
-    const markerCollapse = (
-        <Collapse in={stationSelected}>
-            <Paper className={classes.markerInfo}>
-                <Grid container alignItems="flex-start" justify="space-between">
-                    <Grid item>
-                        {markerInfo}
-                    </Grid>
-                    <Grid item>
-                        <IconButton onClick={deselectStation} size="small">
-                            <Close/>
-                        </IconButton>
-                    </Grid>
-                </Grid>
-            </Paper>
-        </Collapse>
-    );
 
     return(
         <Container maxWidth="lg">
             <Grid container spacing={1}>
-                <Grid item xs={12} sm={12} md={3} className={classes.mt3}>
-                    <StateSelect state={state}/>
+                <Grid item xs={12} sm={12} md={3}>
+                    <Grid container spacing={1} >
+                        <ViewTabs variant="map" state={state} selectedView={selectedView}/>
+                    </Grid>
+                    <StateSelect state={state} className={classes.mt1mt2mdUp}/>
                 </Grid>
-                <Grid item xs={12} sm={12} md={9} className={classes.mt2smUp}>
+                <Grid item xs={12} sm={12} md={9} className={classes.mt1}>
                     <StationMap 
                         all bounds={bounds}
                         stations={stations} prefersDarkMode={props.prefersDarkMode}
-                        setStationSelected={setStationSelected}
-                        selectedStationMarker={selectedStationMarker}
-                        setSelectedStationMarker={setSelectedStationMarker}
                     />
-                    {markerCollapse}
                 </Grid>
             </Grid>
         </Container>
