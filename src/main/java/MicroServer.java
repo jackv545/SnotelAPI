@@ -38,6 +38,7 @@ public class MicroServer {
         Spark.get("api/updateResorts", this::processUpdateResortsRequest);
         Spark.get("api/skiAreas", this::processSkiAreasRequest);
         Spark.get("api/state", this::processStateRequest);
+        Spark.get("api/count", this::processCountRequest);
     }
 
     private String processConfigRequest(Request request, Response response) {
@@ -78,15 +79,17 @@ public class MicroServer {
 
     private String processStateRequest(Request request, Response response) {
         String state = request.queryParams("state");
-        String includeStats =
-            request.queryParamOrDefault("includeStats", "false");
         String includeBounds =
             request.queryParamOrDefault("includeStationBounds", "false");
         String includeSkiAreaBounds =
             request.queryParamOrDefault("includeSkiAreaBounds", "false");
         return processGetRequest(
-            new State(state, includeStats, includeBounds, includeSkiAreaBounds), request, response
+            new State(state, includeBounds, includeSkiAreaBounds), request, response
         );
+    }
+    
+    private String processCountRequest(Request request, Response response) {
+        return processGetRequest(new Count(request.queryParams("state")), request, response);
     }
 
     private String processGetRequest(APIHeader requestType, Request request, Response response) {

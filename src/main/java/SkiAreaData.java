@@ -53,7 +53,7 @@ public class SkiAreaData extends APIHeader {
         try (
             PreparedStatement stmt = conn.prepareStatement(sqlInsert);
         ) {
-            stmt.setInt(1, skiArea.getId());
+            stmt.setInt(1, skiArea.getID());
             stmt.setInt(2, skiArea.getRegion());
             stmt.setString(3, skiArea.getName());
             stmt.setString(4, skiArea.getWebsite());

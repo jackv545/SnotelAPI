@@ -3,10 +3,10 @@ import { Link } from 'react-router-dom';
 
 import { Container, Grid, Card, CardContent, CardActions, Typography, Button } 
     from '@material-ui/core';
-import { Skeleton } from '@material-ui/lab';
 import { makeStyles } from '@material-ui/styles';
 
 import { sendServerRequest } from '../api/restfulAPI';
+import ListSkeleton from './stateInfo/ListSkeleton';
 
 const useStyles = makeStyles((theme) => ({
     container: {
@@ -72,14 +72,6 @@ export default function States(props) {
             </Grid>
         );
     }
-
-    const listSkeleton = (
-        [...Array(13)].map((val, i) => (
-            <Grid item xs={12} sm={6} md={4} key={i.toString()}>
-                <Skeleton variant="rect" height={180}/>
-            </Grid>
-        ))
-    );
     
     return(
         <Container maxWidth="lg" className={classes.container}>
@@ -116,7 +108,7 @@ export default function States(props) {
                             </Card>
                         </Grid>
                     ))
-                    : listSkeleton
+                    : <ListSkeleton variant="states" count={13} height={180}/>
                 }
             </Grid>
         </Container>

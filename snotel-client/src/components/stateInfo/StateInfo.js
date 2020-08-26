@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useLocation, Link as RouterLink } from 'react-router-dom';
+import { useParams, Link as RouterLink } from 'react-router-dom';
 
-import {Container, Grid, Typography, Button, Menu, MenuItem, ButtonBase, useMediaQuery, 
-    Hidden, Chip } from '@material-ui/core';
+import {Container, Grid, Typography, Button, Menu, MenuItem, useMediaQuery, 
+    Hidden } from '@material-ui/core';
 import { Skeleton } from '@material-ui/lab';
-import { makeStyles, useTheme } from '@material-ui/styles';
-import { fade } from '@material-ui/core/styles';
+import { makeStyles } from '@material-ui/styles';
 import { Public, Sort, ArrowDropDown } from '@material-ui/icons';
 
+import { VIEW_OPTION_KEYS, useQuery, ViewTabs } from '../margins/ViewTabs';
 import SkiAreas from './SkiAreas';
 import BackcountryStations from './BackcountryStations';
 import { sendServerRequest } from '../../api/restfulAPI';
@@ -39,37 +39,6 @@ const useStyles = makeStyles((theme) => ({
     endIcon: {
         marginLeft: 'auto'
     },
-    tab: {
-        ...theme.typography.button,
-        textTransform: 'none',
-        padding: '5px 15px',
-        width: '100%',
-        transition: theme.transitions.create(['background-color'], {
-            duration: theme.transitions.duration.short,
-        }),
-        borderRadius: theme.shape.borderRadius,
-        justifyContent: 'left',
-        [theme.breakpoints.down('xs')]: {
-            borderRadius: theme.spacing(2),
-            justifyContent: 'center'
-        },
-        border: `1px solid ${
-            theme.palette.type === 'light' 
-            ? 'rgba(0, 0, 0, 0.23)' : 'rgba(255, 255, 255, 0.23)'
-        }`,
-        '&:hover': {
-            backgroundColor: 
-                fade(theme.palette.text.primary, theme.palette.action.hoverOpacity),
-            // Reset on touch devices, it doesn't add specificity
-            '@media (hover: none)': {
-                backgroundColor: 'transparent',
-            }
-        }
-    },
-    chip: {
-        backgroundColor: theme.palette.type === 'light' 
-            ? theme.palette.grey[400] : theme.palette.grey[700]
-    },
     mt1: {
         marginTop: theme.spacing(1)
     },
@@ -87,14 +56,6 @@ const useStyles = makeStyles((theme) => ({
         }
     }
 }));
-
-// A custom hook that builds on useLocation to parse the query string
-export function useQuery() {
-    return new URLSearchParams(useLocation().search);
-}
-
-export const VIEW_OPTIONS = {'ski-areas': 'Ski Areas', backcountry: 'Backcountry'};
-export const VIEW_OPTION_KEYS = Object.keys(VIEW_OPTIONS);
 
 export default function StateInfo(props) {
     const [selectedView, setSelectedView] = useState(VIEW_OPTION_KEYS[0]);
@@ -117,51 +78,6 @@ export default function StateInfo(props) {
     }, [query, selectedSort]);
 
     const classes = useStyles();
-    const theme = useTheme();
-
-    const [skiAreaCount, setSkiAreaCount] = useState(-1);
-    const [backcountryStationCount, setBackcountryStationCount] = useState(-1);
-    
-    const viewTabChip = (count) => {
-        return (count > -1
-            ? <Chip 
-                size="small" label={count} className={classes.endIcon}
-                classes={{root: classes.chip}}
-            />
-            : <Skeleton 
-                variant="circle" width={32} height={24} 
-                className={classes.endIcon}
-            />
-        );
-    };
-
-    const viewTabs = (
-        VIEW_OPTION_KEYS.map((viewOption, i) => (
-            <Grid 
-                item xs={6} sm={12} key={viewOption} 
-                className={i === 0 ? classes.mt2smUp : null}
-            >
-                <ButtonBase 
-                    focusRipple classes={{root: classes.tab}} 
-                    component={RouterLink} to={`?tab=${viewOption}`}
-                    style={viewOption === selectedView ? { 
-                        backgroundColor: 
-                            fade(
-                                theme.palette.secondary.main, 
-                                theme.palette.action.activatedOpacity
-                            ),
-                        pointerEvents: 'none'
-                    } : null}
-                >
-                    {VIEW_OPTIONS[viewOption]}
-                    {viewTabChip(
-                        viewOption === VIEW_OPTION_KEYS[0] 
-                            ? skiAreaCount : backcountryStationCount
-                    )}
-                </ButtonBase>
-            </Grid>
-        ))
-    );
 
     const [anchorEl, setAnchorEl] = useState(null);
 
@@ -236,13 +152,11 @@ export default function StateInfo(props) {
     const [regionID, setRegionID] = useState(0);
 
     useEffect(() => {
-        sendServerRequest(`state?state=${urlParams.state}&includeStats=true`)
+        sendServerRequest(`state?state=${urlParams.state}`)
             .then((response => {
                 if (response.statusCode >= 200 && response.statusCode <= 299) {
                     setStateName(response.body.stateName);
                     setRegionID(response.body.region);
-                    setSkiAreaCount(response.body.skiAreaCount);
-                    setBackcountryStationCount(response.body.backcountryStationCount);
                 } else {
                     console.error("Response code: ", response.statusCode, response.statusText);
                 }
@@ -257,7 +171,7 @@ export default function StateInfo(props) {
                     {stateName.length > 0 ? stateName : <Skeleton />}
                 </Typography>
             </Grid>
-            {viewTabs}
+            <ViewTabs state={urlParams.state} selectedView={selectedView}/>
             <Grid item xs={6} sm={12}>
                 {sortSelect(selectedView === VIEW_OPTION_KEYS[0] 
                     ? sortOptions : backcountrySortOptions
