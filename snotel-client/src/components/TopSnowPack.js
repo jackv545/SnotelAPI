@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 
-import { Button, Grid, Typography } from '@material-ui/core';
+import { Button, Grid, Typography, Chip } from '@material-ui/core';
 import { Skeleton } from '@material-ui/lab';
-import { Place, ChevronRight } from '@material-ui/icons';
+import { Place } from '@material-ui/icons';
 import { makeStyles } from '@material-ui/styles';
 
 import { sendServerRequestWithBody } from '../api/restfulAPI';
@@ -14,14 +14,14 @@ const useStyles = makeStyles((theme) => ({
         justifyContent: 'left'
     },
     endIcon: {
-        color: theme.palette.secondary.main,
         marginLeft: 'auto'
     },
     menuText: {
         marginTop: theme.spacing(3)
     },
-    snowDepth: {
-        paddingLeft: theme.spacing(1)
+    chip: {
+        backgroundColor: theme.palette.type === 'light' 
+            ? theme.palette.grey[400] : theme.palette.grey[700]
     }
 }));
 
@@ -47,15 +47,16 @@ export default function TopSnowPack(props) {
         topStations.map((station, i) => (
             <Grid item key={i.toString()} xs={12}>
                 <Button 
-                    classes={{label: classes.label, endIcon: classes.endIcon}} 
+                    classes={{ label: classes.label }} 
                     fullWidth={true} variant="outlined"
-                    startIcon={<Place/>} endIcon={<ChevronRight/>}
+                    startIcon={<Place/>}
                     component={Link} to={`/location/${station.urlName}`}
                 >
                     {`${station.name}, ${station.state}`}
-                    <Typography className={classes.snowDepth} variant="body2">
-                        {`${station.snowDepth}"`}
-                    </Typography>
+                    <Chip 
+                        className={classes.endIcon} size="small"
+                        label={`${station.snowDepth}"`} classes={{ root: classes.chip }}
+                    />
                 </Button>
             </Grid>
         ))
