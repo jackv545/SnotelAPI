@@ -19,10 +19,6 @@ const useStyles = makeStyles((theme) => ({
         }),
         borderRadius: theme.shape.borderRadius,
         justifyContent: 'left',
-        [theme.breakpoints.down('xs')]: {
-            borderRadius: theme.spacing(2),
-            justifyContent: 'center'
-        },
         border: `1px solid ${
             theme.palette.type === 'light' 
             ? 'rgba(0, 0, 0, 0.23)' : 'rgba(255, 255, 255, 0.23)'
@@ -35,6 +31,18 @@ const useStyles = makeStyles((theme) => ({
                 backgroundColor: 'transparent',
             }
         }
+    },
+    listBorderRadius: {
+        [theme.breakpoints.down('xs')]: {
+            borderRadius: theme.spacing(2),
+            justifyContent: 'center'
+        }
+    },
+    mapBorderRadius: {
+        [theme.breakpoints.down('sm')]: {
+            borderRadius: theme.spacing(2),
+            justifyContent: 'center'
+        },
     },
     chip: {
         backgroundColor: theme.palette.type === 'light' 
@@ -105,13 +113,21 @@ export function ViewTabs(props) {
         }
     }
 
+    const tabClassName = () => {
+        if(props.variant === 'map') {
+            return `${classes.tab} ${classes.mapBorderRadius}`;
+        } else {
+            return `${classes.tab} ${classes.listBorderRadius}`;
+        }
+    }
+
     return (
         VIEW_OPTION_KEYS.map((viewOption, i) => (
             <Grid 
                 item {...gridProps(i)} key={viewOption}
             >
                 <ButtonBase 
-                    focusRipple classes={{root: classes.tab}} 
+                    focusRipple classes={{root: tabClassName()}} 
                     component={Link} to={`?tab=${viewOption}`}
                     style={viewOption === props.selectedView ? { 
                         backgroundColor: 
