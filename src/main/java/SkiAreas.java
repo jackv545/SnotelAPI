@@ -38,17 +38,27 @@ public class SkiAreas extends APIHeader{
     private List<SkiArea> skiAreas;
     private int size;
 
-    private final transient List<Filter> FILTERS;
+    private transient List<Filter> FILTERS;
     private transient String orderBy;
     private enum SearchFields {
         id, region, name
     }
 
-
-    public SkiAreas(String id, String region, String name) {
+    private SkiAreas() {
         this.requestVersion = 1;
         this.requestType= "skiAreas";
+    }
 
+    public SkiAreas(int region) {
+        this();
+        FILTERS = new ArrayList<>();
+        FILTERS.add( new Filter(SearchFields.region.toString(), Integer.toString(region)));
+
+        orderBy = "none";
+    }
+
+    public SkiAreas(String id, String region, String name) {
+        this();
         FILTERS = new ArrayList<>();
         FILTERS.add(new Filter(SearchFields.id.toString(), id));
         FILTERS.add( new Filter(SearchFields.region.toString(), region));

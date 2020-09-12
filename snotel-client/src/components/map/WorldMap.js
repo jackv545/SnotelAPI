@@ -4,10 +4,11 @@ import { useParams } from 'react-router-dom';
 import { Container, Grid } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 
-import { sendServerRequest, sendServerRequestWithBody } from '../../api/restfulAPI';
+import { sendServerRequest } from '../../api/restfulAPI';
 import { VIEW_OPTION_KEYS, useQuery, ViewTabs } from '../margins/ViewTabs';
 import StationMap from './StationMap';
 import StateSelect from './StateSelect';
+import PageNotFound from '../margins/PageNotFound';
 
 const useStyles = makeStyles((theme) => ({
     markerInfo: {
@@ -40,112 +41,69 @@ export default function WorldMap(props) {
     useEffect(() => {
         if(query.get('tab')) {
             setSelectedView(query.get('tab'));
-        } else if(!selectedView) {
-            setSelectedView(VIEW_OPTION_KEYS[1]);
+        } else {
+            setSelectedView(VIEW_OPTION_KEYS[0]);
         }
-    }, [query, selectedView]);
+    }, [query]);
 
     const [state, setState] = useState('');
-    const [stateName, setStateName] = useState('');
-    const [region, setRegion] = useState(-1);
     const [bounds, setBounds] = useState(BOUNDS_DEFAULT);
 
+    const setDefaultState = () => {
+        setState(SELECTED_STATE_DEFAULT.key);
+        setBounds(BOUNDS_DEFAULT);
+        document.title = 'World Map | Snotel';
+    }
+
     let urlParams = useParams();
+    const [stateNotFound, setStateNotFound] = useState(false);
+    const [locations, setLocations] = useState([]);
 
     useEffect(() => {
-        const boundsParameters = () => {
-            const stations = `&includeStationBounds=${selectedView === VIEW_OPTION_KEYS[1]}`;
-            const skiAreas = `&includeSkiAreaBounds=${selectedView === VIEW_OPTION_KEYS[0]}`;
-            return `${stations}${skiAreas}`;
-        }
-
-        if(urlParams.state && selectedView) {
-            sendServerRequest(`state?state=${urlParams.state}${boundsParameters()}`)
+        if(selectedView) {
+            const selectedState = urlParams.state ? urlParams.state : SELECTED_STATE_DEFAULT.key;
+            sendServerRequest(`map/${selectedView}?state=${selectedState}`)
                 .then((response => {
                     if (response.statusCode >= 200 && response.statusCode <= 299) {
-                        setState(response.body.state);
-                        setStateName(response.body.stateName);
-                        setRegion(response.body.region);
-                        if(selectedView === VIEW_OPTION_KEYS[0]) {
-                            setBounds(response.body.skiAreaBounds);
-                        } else if(selectedView === VIEW_OPTION_KEYS[1]) {
-                            setBounds(response.body.stationBounds);
+                        setStateNotFound(false);
+                        if(selectedState !== SELECTED_STATE_DEFAULT.key) {
+                            setState(response.body.stateInfo.state);
+                            setBounds(response.body.stateInfo.bounds);
+                            document.title = `${response.body.stateInfo.stateName} Map | Snotel`;
+                        } else {
+                            setDefaultState();
                         }
+                        setLocations(response.body.locations[
+                            selectedView === VIEW_OPTION_KEYS[0] ? 'skiAreas' : 'stations'
+                        ]);
                     } else {
-                        console.error("Response code: ", response.statusCode, response.statusText);
-                    }
-                })
-            );
-        } else if(!urlParams.state) {
-            setState(SELECTED_STATE_DEFAULT.key);
-            setStateName(SELECTED_STATE_DEFAULT.name);
-            setRegion(0);
-            setBounds(BOUNDS_DEFAULT);
-        }
-    }, [urlParams, selectedView]);
-
-    //set document title
-    useEffect(() => {
-        if(stateName.length > 0) {
-            if(state !== SELECTED_STATE_DEFAULT.key) {
-                document.title = `${stateName} Map | Snotel`;
-            } else {
-                document.title = 'World Map | Snotel';
-            }
-        } 
-    }, [state, stateName]);
-
-    const [stations, setStations] = useState([]);
-
-    useEffect(() => {
-        const dependenciesSet = state.length > 0 && region > -1; //ensure request is only sent once
-
-        if(selectedView === VIEW_OPTION_KEYS[0] && dependenciesSet) {
-            sendServerRequest(region ? `skiAreas?region=${region}` : 'skiAreas')
-                .then((response => {
-                    if (response.statusCode >= 200 && response.statusCode <= 299) {
-                        setStations(response.body.skiAreas)
-                    } else {
-                        console.error("Response code: ", response.statusCode, response.statusText);
-                    }
-                })
-            );
-        } else if (selectedView === VIEW_OPTION_KEYS[1] && dependenciesSet) {
-            const stationsHeader = { requestType: 'stations', requestVersion: 1 };
-            const search = state !== SELECTED_STATE_DEFAULT.key
-                ? { searchField: 'state', searchTerm: state} : null;
-
-            sendServerRequestWithBody({...stationsHeader, ...search})
-                .then((response => {
-                    if (response.statusCode >= 200 && response.statusCode <= 299) {
-                        setStations(response.body.stations)
-                    } else {
-                        console.error("Response code: ", response.statusCode, response.statusText);
+                        setStateNotFound(true);
                     }
                 })
             );
         }
-        
-    }, [selectedView, state, region]);
+    }, [selectedView, urlParams]);
 
     const classes = useStyles();
 
     return(
         <Container maxWidth="lg">
-            <Grid container spacing={1}>
-                <Grid item xs={12} sm={12} md={3}>
-                    <Grid container spacing={1} >
-                        <ViewTabs variant="map" state={state} selectedView={selectedView}/>
+            {stateNotFound ? <PageNotFound/>
+                : <Grid container spacing={1}>
+                    <Grid item xs={12} sm={12} md={3}>
+                        <Grid container spacing={1} >
+                            <ViewTabs variant="map" state={state} selectedView={selectedView}/>
+                        </Grid>
+                        <StateSelect state={state} className={classes.mt1mt2mdUp}/>
                     </Grid>
-                    <StateSelect state={state} className={classes.mt1mt2mdUp}/>
+                    <Grid item xs={12} sm={12} md={9} className={classes.mt1}>
+                        <StationMap 
+                            all bounds={bounds}
+                            stations={locations} prefersDarkMode={props.prefersDarkMode}
+                        />
+                    </Grid>
                 </Grid>
-                <Grid item xs={12} sm={12} md={9} className={classes.mt1}>
-                    <StationMap 
-                        all bounds={bounds}
-                        stations={stations} prefersDarkMode={props.prefersDarkMode}
-                    />
-                </Grid>
-            </Grid>
+            }
         </Container>
     );
 }

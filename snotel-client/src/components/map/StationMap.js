@@ -58,7 +58,7 @@ const icon = (prefersDarkMode, selected) => {
 }
 
 const mapProps = {
-    attributionControl: false
+    attributionControl: false, useFlyTo: true
 }
 
 class StationMap extends Component {

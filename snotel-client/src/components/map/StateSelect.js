@@ -84,6 +84,17 @@ export default function StateSelect(props) {
 
     const mdUp = useMediaQuery(theme => theme.breakpoints.up('md'));
 
+    const stateLink = (state) => {
+        let link = '/map';
+        if(state !== SELECTED_STATE_DEFAULT.key) {
+            link = link.concat(`/${state}`);
+        }
+        if(query.get('tab')) {
+            link = link.concat(`?tab=${query.get('tab')}`);
+        }
+        return link;
+    }
+
     const stateMenu = (
         <React.Fragment>
             <Button
@@ -104,10 +115,7 @@ export default function StateSelect(props) {
             >
                 {Object.keys(states).map((state) => (
                     <MenuItem
-                        onClick={handleClose} component={Link} 
-                        to={state !== SELECTED_STATE_DEFAULT.key 
-                            ? `/map/${state}` : '/map'
-                        }
+                        onClick={handleClose} component={Link} to={stateLink(state)}
                         selected={state === props.state} key={state}
                     >
                         {states[state].stateName}
