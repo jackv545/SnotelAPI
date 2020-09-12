@@ -2,45 +2,34 @@ import java.net.URISyntaxException;
 import java.sql.*;
 
 public class State extends APIHeader {
-    private transient boolean includeStationBounds, includeSkiAreaBounds;
-    private final String state;
-    private String stateName;
+    private String state, stateName;
     private int region;
-    private Integer backcountryStationCount, skiAreaCount; //gson does not serialize null objects
-    private double[][] stationBounds, skiAreaBounds;
-
-    private State(String state) {
-        this.requestVersion = 1;
-        this.requestType = "state";
-        this.state = state;
-    }
-
-    public State(
-        String state, String includeStationBounds, String includeSkiAreaBounds
-    ) {
-        this(state);
-        this.includeStationBounds = Boolean.parseBoolean(includeStationBounds);
-        this.includeSkiAreaBounds = Boolean.parseBoolean(includeSkiAreaBounds);
-    }
-
-    public State(
-        String state, boolean includeStationBounds, boolean includeSkiAreaBounds
-    ) {
-        this(state);
-        this.includeStationBounds = includeStationBounds;
-        this.includeSkiAreaBounds = includeSkiAreaBounds;
-    }
 
     public enum Table {backcountry, skiAreas}
 
-    private static double[][] getBounds(
-        Table boundsType, String state, Connection conn
-    ) throws SQLException {
-        double[][] bounds = new double[2][2];
+    private transient Table table;
+    private transient boolean includeBounds;
+    private double[][] bounds;
+
+    public State(String state) {
+        this.requestVersion = 1;
+        this.requestType = "state";
+        this.state = state;
+        this.includeBounds = false;
+    }
+
+    public State(String state, Table table) {
+        this(state);
+        this.includeBounds = true;
+        this.table = table;
+    }
+
+    private void setBounds(Connection conn) throws SQLException {
+        bounds = new double[2][2];
 
         String query = "";
 
-        switch (boundsType) {
+        switch (table) {
             case backcountry:
                 query = "SELECT MIN(lat) AS \"minLat\", MIN(lng) AS \"minLng\", MAX(lat) " +
                     "AS \"maxLat\", MAX(lng) AS \"maxLng\" FROM stations WHERE state=?";
@@ -73,24 +62,14 @@ public class State extends APIHeader {
         if(bounds[1][0] < 89.9) {
             bounds[1][0] += 0.1;
         }
-        return bounds;
-    }
-
-    private void setStationBounds(Connection conn) throws SQLException {
-        stationBounds = getBounds(Table.backcountry, state, conn);
-    }
-
-    private void setSkiAreaBounds(Connection conn) throws SQLException {
-        skiAreaBounds = getBounds(Table.skiAreas, state, conn);
-
     }
 
     @Override
     public void buildResponse() throws URISyntaxException, SQLException {
         String query = "SELECT * FROM states WHERE state=?";
         try (
-            Connection conn = Stations.getConnection();
-            PreparedStatement stmt = conn.prepareStatement(query);
+                Connection conn = Stations.getConnection();
+                PreparedStatement stmt = conn.prepareStatement(query);
         ) {
             stmt.setString(1, state);
 
@@ -102,14 +81,14 @@ public class State extends APIHeader {
                 throw new SQLException(String.format("No rows where state='%s'", state));
             }
 
-            if(includeStationBounds) {
-                setStationBounds(conn);
-            }
-
-            if(includeSkiAreaBounds) {
-                setSkiAreaBounds(conn);
+            if(includeBounds) {
+                setBounds(conn);
             }
         }
+    }
+
+    public String getState() {
+        return state;
     }
 
     public String getStateName() {
@@ -120,7 +99,7 @@ public class State extends APIHeader {
         return region;
     }
 
-    public double[][] getStationBounds() {
-        return stationBounds;
+    public double[][] getBounds() {
+        return bounds;
     }
 }

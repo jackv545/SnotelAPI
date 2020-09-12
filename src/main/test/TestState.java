@@ -7,7 +7,7 @@ import java.sql.SQLException;
 public class TestState {
     @Test
     public void testState() throws SQLException, URISyntaxException {
-        State stateRequest = new State("CO", false, false);
+        State stateRequest = new State("CO");
         stateRequest.buildResponse();
 
         assertEquals("stateName", "Colorado", stateRequest.getStateName());
@@ -17,16 +17,15 @@ public class TestState {
     //should throw error when invalid state option is given
     @Test(expected = SQLException.class)
     public void testSQLerror() throws URISyntaxException, SQLException {
-        State stateRequest = new State("123", false, false);
+        State stateRequest = new State("123");
         stateRequest.buildResponse();
     }
 
     @Test
     public void testStateBounds() throws Exception {
-        State stateRequest = new State("CO", true, false);
+        State stateRequest = new State("CO", State.Table.backcountry);
         stateRequest.buildResponse();
 
-        assertEquals("State bounds array size",
-                2, stateRequest.getStationBounds().length);
+        assertEquals("State bounds array size", 2, stateRequest.getBounds().length);
     }
 }
