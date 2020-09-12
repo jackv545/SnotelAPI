@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 
-import { Button, Menu, MenuItem, Typography, Grid, useMediaQuery, Hidden } 
+import { Button, Menu, MenuItem, Typography, useMediaQuery, Hidden } 
     from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
-import { ArrowDropDown, List, Flag } from '@material-ui/icons';
+import { ArrowDropDown, Flag } from '@material-ui/icons';
 
 import { SELECTED_STATE_DEFAULT } from './WorldMap.js';
 import { useQuery } from '../margins/ViewTabs';
@@ -45,32 +45,7 @@ export default function StateSelect(props) {
         }
     }, [props.state, states]);
 
-    const classes = useStyles();
-
     let query = useQuery();
-    const [listLink, setListLink] = useState(''); 
-
-    useEffect(() => {
-        if(props.state.length > 0) {
-            if(query.get('tab') && props.state !== SELECTED_STATE_DEFAULT.key) {
-                setListLink(`/explore/${props.state}?tab=${query.get('tab')}`);
-            } else if(props.state !== SELECTED_STATE_DEFAULT.key) {
-                setListLink(`/explore/${props.state}`);
-            } else {
-                setListLink(`/explore`)
-            }
-        }
-    }, [query, props.state]);
-
-    const listButton = (
-        <Button
-            fullWidth variant="outlined" startIcon={<List/>}
-            classes={{ label: classes.label }} component={Link} 
-            to={listLink}
-        >
-            Switch to List
-        </Button>
-    );
 
     const [anchorEl, setAnchorEl] = useState(null);
 
@@ -94,6 +69,8 @@ export default function StateSelect(props) {
         }
         return link;
     }
+
+    const classes = useStyles();
 
     const stateMenu = (
         <React.Fragment>
@@ -126,18 +103,13 @@ export default function StateSelect(props) {
     );
 
     return(
-        <Grid container spacing={1} className={props.className}>
-            <Grid item xs={6} sm={6} md={12}>
-                <Hidden smDown>
-                    <Typography variant="caption">
-                        State:
-                    </Typography>
-                </Hidden>
-                {stateMenu}
-            </Grid>
-            <Grid item xs={6} sm={6} md={12}>
-                {listButton}
-            </Grid>
-        </Grid> 
+        <div className={props.className}>
+            <Hidden smDown>
+                <Typography variant="caption">
+                    State:
+                </Typography>
+            </Hidden>
+            {stateMenu}
+        </div> 
     );
 }

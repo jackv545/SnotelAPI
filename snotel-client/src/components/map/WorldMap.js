@@ -8,13 +8,10 @@ import { sendServerRequest } from '../../api/restfulAPI';
 import { VIEW_OPTION_KEYS, useQuery, ViewTabs } from '../margins/ViewTabs';
 import StationMap from './StationMap';
 import StateSelect from './StateSelect';
+import ListButton from './ListButton';
 import PageNotFound from '../margins/PageNotFound';
 
 const useStyles = makeStyles((theme) => ({
-    markerInfo: {
-        padding: theme.spacing(1),
-        marginTop: theme.spacing(1)
-    },
     mt1: {
         marginTop: theme.spacing(1)
     },
@@ -24,8 +21,10 @@ const useStyles = makeStyles((theme) => ({
             marginTop: theme.spacing(2)
         }
     },
-    mt3: {
-        marginTop: theme.spacing(3)
+    mt2mdUp: {
+        [theme.breakpoints.up('md')]: {
+            marginTop: theme.spacing(2)
+        }
     }
 }));
 
@@ -89,12 +88,17 @@ export default function WorldMap(props) {
     return(
         <Container maxWidth="lg">
             {stateNotFound ? <PageNotFound/>
-                : <Grid container spacing={1}>
+                : <Grid container spacing={2}>
                     <Grid item xs={12} sm={12} md={3}>
                         <Grid container spacing={1} >
                             <ViewTabs variant="map" state={state} selectedView={selectedView}/>
+                            <Grid item xs={6} sm={6} md={12}>
+                                <StateSelect state={state} className={classes.mt2mdUp}/>
+                            </Grid>
+                            <Grid item xs={6} sm={6} md={12}>
+                                <ListButton state={state} className={classes.mt2mdUp}/>
+                            </Grid>
                         </Grid>
-                        <StateSelect state={state} className={classes.mt1mt2mdUp}/>
                     </Grid>
                     <Grid item xs={12} sm={12} md={9} className={classes.mt1}>
                         <StationMap 
