@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, Link as RouterLink } from 'react-router-dom';
 
 import { Container, Grid, Typography, Table, TableBody, TableCell, TableContainer, TableHead, 
-    TableRow, Paper } from '@material-ui/core';
+    TableRow, Paper, Link } from '@material-ui/core';
 import { Skeleton } from '@material-ui/lab';
 import { makeStyles } from '@material-ui/styles';
 
@@ -78,9 +78,27 @@ export default function StationInfo(props) {
                     <Typography variant="h4" component="h1">
                         {selectedStation ? selectedStation.name : <Skeleton/>}
                     </Typography>
-                    <Typography variant="body2">
-                        {selectedStation ? `${selectedStation.state}, United States` : <Skeleton/>}
-                    </Typography>
+                    <Grid container alignItems="center" spacing={1}>
+                        <Grid item>
+                            {selectedStation ? <Link 
+                                color="secondary" underline="none" variant="body1"
+                                component={RouterLink} 
+                                to={selectedStation ? `/explore/${selectedStation.state}` : '/'}
+                            >
+                                {selectedStation.stateName} 
+                            </Link> : <Skeleton width="10ch"/>}
+                        </Grid>
+                        <Grid item>
+                            <Typography variant="h6" component="span">
+                                {' · '}
+                            </Typography>
+                        </Grid>
+                        <Grid item>
+                            <Typography>
+                                United States
+                            </Typography>
+                        </Grid>
+                    </Grid>
                 </Grid>
                 <Grid item xs={12} sm={12} md={8}>
                     {infoTable}
