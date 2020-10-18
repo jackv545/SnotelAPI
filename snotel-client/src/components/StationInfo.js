@@ -43,6 +43,21 @@ export default function StationInfo(props) {
 
     const classes = useStyles();
 
+    const snotelLink = (triplet) => {
+        const regex = /[^:]*/;
+        const siteNum = regex.exec(triplet)[0];
+        
+        return (
+            <Link 
+                color="secondary" underline="none"
+                href={`https://wcc.sc.egov.usda.gov/nwcc/site?sitenum=${siteNum}`}
+                target="_blank" rel="noopener"
+            >
+                {triplet}
+            </Link>
+        );
+    };
+
     const infoTable = (
         <TableContainer component={Paper}>
             <Table aria-label="summary-table">
@@ -63,7 +78,7 @@ export default function StationInfo(props) {
                             {selectedStation ? selectedStation.snowDepth : <Skeleton/>}
                         </TableCell>
                         <TableCell>
-                            {selectedStation ? selectedStation.triplet : <Skeleton/>}
+                            {selectedStation ? snotelLink(selectedStation.triplet) : <Skeleton/>}
                         </TableCell>
                     </TableRow>
                 </TableBody>
