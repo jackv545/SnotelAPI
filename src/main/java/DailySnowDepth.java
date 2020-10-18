@@ -79,7 +79,6 @@ public class DailySnowDepth extends APIHeader {
                         stmt.setString(2, triplet);
 
                         int status = stmt.executeUpdate();
-                        int status = 1;
                         checkQueryStatus(status, triplet);
                         rowsUpdated += status;
                         log.info("{} snowDepth: {} {}/{}", triplet, snowDepth, rowsUpdated, rowCount);
