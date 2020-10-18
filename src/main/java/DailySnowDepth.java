@@ -58,7 +58,7 @@ public class DailySnowDepth extends APIHeader {
     private void updateDatabase(InputStreamReader isr) throws SQLException, IOException, URISyntaxException {
         String inputLine;
         int nonCommentLine = 0;
-        String sqlUpdate = "UPDATE stations SET snowdepth=? WHERE triplet=?";
+        String sqlUpdate = "UPDATE stations SET \"snowDepth\"=? WHERE triplet=?";
         rowsUpdated = 0;
 
         try (
@@ -66,6 +66,8 @@ public class DailySnowDepth extends APIHeader {
             Connection conn = Stations.getConnection();
             PreparedStatement stmt = conn.prepareStatement(sqlUpdate);
         ) {
+            int rowCount = rowCount(conn);
+
             while ((inputLine = in.readLine()) != null) {
                 if (inputLine.charAt(0) != '#') {
                     if (nonCommentLine != 0) {
@@ -77,11 +79,10 @@ public class DailySnowDepth extends APIHeader {
                         stmt.setString(2, triplet);
 
                         int status = stmt.executeUpdate();
+                        int status = 1;
                         checkQueryStatus(status, triplet);
                         rowsUpdated += status;
-                        log.info("{} snowDepth: {} {}/{}", triplet, snowDepth, rowsUpdated,
-                                rowCount(conn)
-                        );
+                        log.info("{} snowDepth: {} {}/{}", triplet, snowDepth, rowsUpdated, rowCount);
                     }
                     nonCommentLine++;
                 } else if (inputLine.contains("SNOLITE")) {
