@@ -1,5 +1,8 @@
 import java.net.URISyntaxException;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 public class LocationMap extends APIHeader {
     private State stateInfo;
@@ -26,8 +29,9 @@ public class LocationMap extends APIHeader {
         switch(table) {
             case skiAreas:
                 if(all) {
-                    locations = new SkiAreas(MicroServer.DEFAULT_QUERY_PARAM,
-                        MicroServer.DEFAULT_QUERY_PARAM, MicroServer.DEFAULT_QUERY_PARAM
+                    locations = new SkiAreas(
+                        MicroServer.DEFAULT_QUERY_PARAM, MicroServer.DEFAULT_QUERY_PARAM,
+                        MicroServer.DEFAULT_QUERY_PARAM, true
                     );
                 } else {
                     locations = new SkiAreas(stateInfo.getRegion());

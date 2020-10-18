@@ -11,7 +11,8 @@ public class TestSkiAreas {
         SkiAreas skiAreasRequest = new SkiAreas(
             MicroServer.DEFAULT_QUERY_PARAM,
             MicroServer.DEFAULT_QUERY_PARAM,
-            MicroServer.DEFAULT_QUERY_PARAM
+            MicroServer.DEFAULT_QUERY_PARAM,
+                false
         );
         skiAreasRequest.buildResponse();
 
@@ -24,7 +25,7 @@ public class TestSkiAreas {
     public void testGetCOskiAreas() throws URISyntaxException, SQLException {
         //Request all ski areas with region id 281 (CO)
         SkiAreas skiAreasRequest = new SkiAreas(
-            MicroServer.DEFAULT_QUERY_PARAM, "281", MicroServer.DEFAULT_QUERY_PARAM
+            MicroServer.DEFAULT_QUERY_PARAM, "281", MicroServer.DEFAULT_QUERY_PARAM, false
         );
         skiAreasRequest.buildResponse();
 
@@ -37,7 +38,7 @@ public class TestSkiAreas {
     @Test(expected = NumberFormatException.class)
     public void testNumberFormatException() throws URISyntaxException, SQLException {
         SkiAreas skiAreasRequest = new SkiAreas(
-                MicroServer.DEFAULT_QUERY_PARAM, "Colorado", MicroServer.DEFAULT_QUERY_PARAM
+            MicroServer.DEFAULT_QUERY_PARAM, "Colorado", MicroServer.DEFAULT_QUERY_PARAM, false
         );
         skiAreasRequest.buildResponse();
     }
