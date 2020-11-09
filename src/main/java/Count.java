@@ -22,7 +22,7 @@ public class Count extends APIHeader {
     private void setStationCount(Connection conn, State.Table table) throws SQLException {
         String skiAreaQuery = "SELECT COUNT(\"skiAreas\".id) from \"skiAreas\" "
                 + "INNER JOIN states ON \"skiAreas\".region = states.id "
-                + "AND \"hasDownhill\"=true AND \"operatingStatus\"=1";
+                + "AND \"hasDownhill\"=true AND \"operatingStatus\"=1 AND \"openToPublic\"=true";
         String backcountryQuery = "SELECT COUNT(triplet) from stations";
         String query;
 
@@ -66,7 +66,7 @@ public class Count extends APIHeader {
     @Override
     public void buildResponse() throws Exception {
         try (
-            Connection conn = Stations.getConnection();
+            Connection conn = WebApplication.getDBConnection();
         ) {
             setStationCount(conn, State.Table.skiAreas);
             setStationCount(conn, State.Table.backcountry);

@@ -68,7 +68,7 @@ public class State extends APIHeader {
     public void buildResponse() throws URISyntaxException, SQLException {
         String query = "SELECT * FROM states WHERE state=?";
         try (
-                Connection conn = Stations.getConnection();
+                Connection conn = WebApplication.getDBConnection();
                 PreparedStatement stmt = conn.prepareStatement(query);
         ) {
             stmt.setString(1, state);
