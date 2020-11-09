@@ -11,22 +11,26 @@ import java.sql.*;
 public class Stations extends APIHeader {
     private final transient Logger log = LoggerFactory.getLogger(Stations.class);
 
-    private List<Station> stations;
+    private List<Mappable> stations;
     private int limit;
     private String searchField, searchTerm, orderBy;
+
+    private transient boolean mappable;
 
     public Stations() {
         this.limit = 822;
         this.searchField = "name";
         this.searchTerm = "";
         this.orderBy = "";
+        this.mappable = false;
     }
 
-    public Stations(String searchField, String searchTerm, String orderBy) {
+    public Stations(String searchField, String searchTerm, String orderBy, Boolean mappable) {
         this.limit = 822;
         this.searchField = searchField;
         this.searchTerm = searchTerm;
         this.orderBy = orderBy;
+        this.mappable = mappable;
     }
 
     public Stations(int limit) {
@@ -34,15 +38,7 @@ public class Stations extends APIHeader {
         this.searchField = "name";
         this.searchTerm = "";
         this.orderBy = "snowDepth";
-    }
-
-    public static Connection getConnection() throws URISyntaxException, SQLException {
-        URI dbUri = new URI(System.getenv("DATABASE_URL"));
-        String username = dbUri.getUserInfo().split(":")[0];
-        String password = dbUri.getUserInfo().split(":")[1];
-        String dbUrl = "jdbc:postgresql://" + dbUri.getHost() + ':' + dbUri.getPort() + dbUri.getPath() + "?sslmode=require";
-
-        return DriverManager.getConnection(dbUrl, username, password);
+        this.mappable = false;
     }
 
     private String queryString() throws SQLException {
@@ -99,25 +95,35 @@ public class Stations extends APIHeader {
     public void buildResponse() throws SQLException, URISyntaxException {
         stations = new ArrayList<>();
         try (
-                Connection conn = getConnection();
+                Connection conn = WebApplication.getDBConnection();
                 Statement st = conn.createStatement();
                 ResultSet rs = st.executeQuery(queryString());
         ) {
-            while(rs.next()) {
-                Station station = new Station(
-                    rs.getInt("elevation"), rs.getDouble("lat"),
-                    rs.getDouble("lng"), rs.getInt("timezone"),
-                    rs.getString("triplet"), rs.getBoolean("wind"),
-                    rs.getInt("snowDepth"), rs.getString("state"),
-                    rs.getString("name"), rs.getString("stateName"),
-                    rs.getString("urlName")
-                );
-                stations.add(station);
+            if(mappable) {
+                while (rs.next()) {
+                    stations.add(new Mappable(
+                        rs.getString("name"),
+                        rs.getString("urlName"),
+                        rs.getDouble("lat"),
+                        rs.getDouble("lng")
+                    ));
+                }
+            } else {
+                while(rs.next()) {
+                    stations.add(new Station(
+                        rs.getInt("elevation"), rs.getDouble("lat"),
+                        rs.getDouble("lng"), rs.getInt("timezone"),
+                        rs.getString("triplet"), rs.getBoolean("wind"),
+                        rs.getInt("snowDepth"), rs.getString("state"),
+                        rs.getString("name"), rs.getString("stateName"),
+                        rs.getString("urlName")
+                    ));
+                }
             }
         }
     }
 
-    public List<Station> getStations() {
+    public List<Mappable> getStations() {
         return stations;
     }
 }

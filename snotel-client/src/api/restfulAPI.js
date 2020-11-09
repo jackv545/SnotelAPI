@@ -1,5 +1,8 @@
+const isDev = false;
+const baseUrl = isDev ? 'http://localhost:3001' : 'https://snotel-api.herokuapp.com';
+
 export function sendServerRequest(requestType) {
-    const restfulAPI = `https://snotel-api.herokuapp.com/api/${requestType}`;
+    const restfulAPI = `${baseUrl}/api/${requestType}`;
     const requestOptions = {
         method: "GET"
     };
@@ -7,7 +10,7 @@ export function sendServerRequest(requestType) {
 }
 
 export function sendServerRequestWithBody(requestBody) {
-    const restfulAPI = `https://snotel-api.herokuapp.com/api/${requestBody.requestType}`;
+    const restfulAPI = `${baseUrl}/api/${requestBody.requestType}`;
     const requestOptions = {
         method: 'POST',
         body: JSON.stringify(requestBody)

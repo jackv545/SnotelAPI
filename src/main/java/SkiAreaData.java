@@ -97,7 +97,7 @@ public class SkiAreaData extends APIHeader {
         */
         try (
             Reader reader = new FileReader("src/resources/skiAreas.json");
-            Connection conn = Stations.getConnection();
+            Connection conn = WebApplication.getDBConnection();
         ) {
             JsonElement jsonElement = parser.parse(reader);
 

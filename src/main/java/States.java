@@ -61,7 +61,8 @@ public class States extends APIHeader{
         skiAreaCount = new HashMap<>();
         String query = "SELECT COUNT(\"skiAreas\".id), state FROM \"skiAreas\" " +
             "INNER JOIN states ON \"skiAreas\".region = states.id " +
-            "WHERE \"operatingStatus\"=1 AND \"hasDownhill\"=true GROUP BY state";
+            "WHERE \"operatingStatus\"=1 AND \"hasDownhill\"=true AND \"openToPublic\"=true " +
+            "GROUP BY state";
 
         try(
             Statement stmt = conn.createStatement();
@@ -80,7 +81,7 @@ public class States extends APIHeader{
             "triplet, \"urlName\" FROM stations INNER JOIN states USING(state) " +
             "ORDER BY state, \"snowDepth\" DESC";
         try (
-            Connection conn = Stations.getConnection();
+            Connection conn = WebApplication.getDBConnection();
 
             Statement stmt = conn.createStatement();
             ResultSet stateTopSnowpack = stmt.executeQuery(query);

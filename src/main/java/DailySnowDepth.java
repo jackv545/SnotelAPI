@@ -63,7 +63,7 @@ public class DailySnowDepth extends APIHeader {
 
         try (
             BufferedReader in = new BufferedReader(isr);
-            Connection conn = Stations.getConnection();
+            Connection conn = WebApplication.getDBConnection();
             PreparedStatement stmt = conn.prepareStatement(sqlUpdate);
         ) {
             int rowCount = rowCount(conn);

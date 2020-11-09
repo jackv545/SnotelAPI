@@ -3,14 +3,12 @@ import com.google.gson.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SkiArea {
+public class SkiArea extends Mappable {
     private final transient Logger log = LoggerFactory.getLogger(SkiArea.class);
 
     private final int id;
     private int region;
-    private String name;
     private String website;
-    private double lat, lng;
     private int topElevation, bottomElevation, verticalDrop, operatingStatus;
     private boolean hasDownhill, hasNordic;
 

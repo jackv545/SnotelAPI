@@ -35,7 +35,7 @@ public class SkiAreas extends APIHeader{
 
     private final transient Logger log = LoggerFactory.getLogger(SkiAreas.class);
 
-    private List<SkiArea> skiAreas;
+    private List<Mappable> skiAreas;
     private int size;
 
     private transient List<Filter> FILTERS;
@@ -43,6 +43,7 @@ public class SkiAreas extends APIHeader{
     private enum SearchFields {
         id, region, name
     }
+    private transient boolean mappable;
 
     private SkiAreas() {
         this.requestVersion = 1;
@@ -55,9 +56,11 @@ public class SkiAreas extends APIHeader{
         FILTERS.add( new Filter(SearchFields.region.toString(), Integer.toString(region)));
 
         orderBy = "none";
+
+        this.mappable = true;
     }
 
-    public SkiAreas(String id, String region, String name) {
+    public SkiAreas(String id, String region, String name, boolean mappable) {
         this();
         FILTERS = new ArrayList<>();
         FILTERS.add(new Filter(SearchFields.id.toString(), id));
@@ -65,10 +68,12 @@ public class SkiAreas extends APIHeader{
         FILTERS.add(new Filter(SearchFields.name.toString(), name));
 
         orderBy = "none";
+
+        this.mappable = mappable;
     }
 
     public SkiAreas(String id, String region, String name, String orderBy) {
-        this(id, region, name);
+        this(id, region, name, false);
         if(orderBy.equals("name") || orderBy.equals("elevation")) {
             this.orderBy = orderBy;
         } else {
@@ -87,7 +92,8 @@ public class SkiAreas extends APIHeader{
     }
 
     private String query() {
-        String whereClause = "WHERE \"operatingStatus\"=1 AND \"hasDownhill\"=true";
+        String whereClause = "WHERE \"operatingStatus\"=1 AND \"hasDownhill\"=true AND" +
+            "\"openToPublic\"=true";
         String query = String.format("SELECT * FROM \"skiAreas\" %s", whereClause);
 
         for(Filter filter : FILTERS) {
@@ -108,7 +114,7 @@ public class SkiAreas extends APIHeader{
         skiAreas = new ArrayList<>();
 
         try (
-            Connection conn = Stations.getConnection();
+            Connection conn = WebApplication.getDBConnection();
             PreparedStatement stmt = conn.prepareStatement(query());
         ) {
             int i = 1;
@@ -126,27 +132,38 @@ public class SkiAreas extends APIHeader{
             log.trace(stmt.toString());
             ResultSet rs = stmt.executeQuery();
 
-            while(rs.next()) {
-                skiAreas.add(new SkiArea(
-                    rs.getInt("id"),
-                    rs.getInt("region"),
-                    rs.getString("name"),
-                    rs.getString("website"),
-                    rs.getDouble("lat"),
-                    rs.getDouble("lng"),
-                    rs.getInt("topElevation"),
-                    rs.getInt("bottomElevation"),
-                    rs.getInt("verticalDrop"),
-                    rs.getInt("operatingStatus"),
-                    rs.getBoolean("hasDownhill"),
-                    rs.getBoolean("hasNordic")
-                ));
+            if(mappable) {
+                while(rs.next()) {
+                    skiAreas.add(new Mappable(
+                        rs.getString("name"),
+                        rs.getString("urlName"),
+                        rs.getDouble("lat"),
+                        rs.getDouble("lng")
+                    ));
+                }
+            } else {
+                while(rs.next()) {
+                    skiAreas.add(new SkiArea(
+                        rs.getInt("id"),
+                        rs.getInt("region"),
+                        rs.getString("name"),
+                        rs.getString("website"),
+                        rs.getDouble("lat"),
+                        rs.getDouble("lng"),
+                        rs.getInt("topElevation"),
+                        rs.getInt("bottomElevation"),
+                        rs.getInt("verticalDrop"),
+                        rs.getInt("operatingStatus"),
+                        rs.getBoolean("hasDownhill"),
+                        rs.getBoolean("hasNordic")
+                    ));
+                }
             }
         }
         size = skiAreas.size();
     }
 
-    public List<SkiArea> getSkiAreas() {
+    public List<Mappable> getSkiAreasMap() {
         return skiAreas;
     }
 }

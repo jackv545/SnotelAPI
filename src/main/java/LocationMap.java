@@ -1,12 +1,11 @@
-import java.net.URISyntaxException;
-import java.sql.SQLException;
+import java.util.List;
 
 public class LocationMap extends APIHeader {
     private State stateInfo;
     private transient String state;
     private transient boolean all;
-    private transient State.Table table;
-    private APIHeader locations;
+    private State.Table table;
+    private List<Mappable> locations;
 
     public LocationMap(String state, State.Table table) {
         this.requestType = String.format("%s map", table.toString());
@@ -25,23 +24,30 @@ public class LocationMap extends APIHeader {
 
         switch(table) {
             case skiAreas:
+                SkiAreas skiAreas;
                 if(all) {
-                    locations = new SkiAreas(MicroServer.DEFAULT_QUERY_PARAM,
-                        MicroServer.DEFAULT_QUERY_PARAM, MicroServer.DEFAULT_QUERY_PARAM
+                    skiAreas = new SkiAreas(
+                        MicroServer.DEFAULT_QUERY_PARAM, MicroServer.DEFAULT_QUERY_PARAM,
+                        MicroServer.DEFAULT_QUERY_PARAM, true
                     );
                 } else {
-                    locations = new SkiAreas(stateInfo.getRegion());
+                    skiAreas = new SkiAreas(stateInfo.getRegion());
                 }
+                skiAreas.buildResponse();
+                locations = skiAreas.getSkiAreasMap();
                 break;
             case backcountry:
+                Stations stations;
                 if(all) {
-                    locations = new Stations("none", "", "none");
+                    stations = new Stations("none", "", "none", true);
                 } else {
-                    locations = new Stations("state", stateInfo.getState(), "none");
+                    stations = new Stations("state", stateInfo.getState(), "none", true);
                 }
+                stations.buildResponse();
+                locations = stations.getStations();
                 break;
         }
-        locations.buildResponse();
+
     }
 
     public State getStateInfo() {
@@ -54,9 +60,5 @@ public class LocationMap extends APIHeader {
 
     public boolean isAll() {
         return all;
-    }
-
-    public APIHeader getLocations() {
-        return locations;
     }
 }
