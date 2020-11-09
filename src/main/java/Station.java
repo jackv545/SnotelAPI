@@ -1,7 +1,6 @@
-public class Station {
+public class Station extends Mappable {
     private int elevation, timezone, snowDepth;
-    private double lat, lng;
-    private String triplet, state, name, stateName, urlName;
+    private String triplet, state, stateName;
     private boolean wind;
 
     public Station(

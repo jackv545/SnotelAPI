@@ -72,9 +72,7 @@ export default function WorldMap(props) {
                         } else {
                             setDefaultState();
                         }
-                        setLocations(response.body.locations[
-                            selectedView === VIEW_OPTION_KEYS[0] ? 'skiAreas' : 'stations'
-                        ]);
+                        setLocations(response.body.locations);
                     } else {
                         setStateNotFound(true);
                     }

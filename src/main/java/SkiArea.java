@@ -8,9 +8,7 @@ public class SkiArea extends Mappable {
 
     private final int id;
     private int region;
-//    private String name;
     private String website;
-//    private double lat, lng;
     private int topElevation, bottomElevation, verticalDrop, operatingStatus;
     private boolean hasDownhill, hasNordic;
 

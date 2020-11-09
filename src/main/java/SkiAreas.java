@@ -92,7 +92,8 @@ public class SkiAreas extends APIHeader{
     }
 
     private String query() {
-        String whereClause = "WHERE \"operatingStatus\"=1 AND \"hasDownhill\"=true";
+        String whereClause = "WHERE \"operatingStatus\"=1 AND \"hasDownhill\"=true AND" +
+            "\"openToPublic\"=true";
         String query = String.format("SELECT * FROM \"skiAreas\" %s", whereClause);
 
         for(Filter filter : FILTERS) {
@@ -113,7 +114,7 @@ public class SkiAreas extends APIHeader{
         skiAreas = new ArrayList<>();
 
         try (
-            Connection conn = Stations.getConnection();
+            Connection conn = WebApplication.getDBConnection();
             PreparedStatement stmt = conn.prepareStatement(query());
         ) {
             int i = 1;
@@ -135,6 +136,7 @@ public class SkiAreas extends APIHeader{
                 while(rs.next()) {
                     skiAreas.add(new Mappable(
                         rs.getString("name"),
+                        rs.getString("urlName"),
                         rs.getDouble("lat"),
                         rs.getDouble("lng")
                     ));
@@ -161,7 +163,7 @@ public class SkiAreas extends APIHeader{
         size = skiAreas.size();
     }
 
-    public List<Mappable> getSkiAreas() {
+    public List<Mappable> getSkiAreasMap() {
         return skiAreas;
     }
 }

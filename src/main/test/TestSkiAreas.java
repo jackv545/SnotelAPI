@@ -17,7 +17,7 @@ public class TestSkiAreas {
         skiAreasRequest.buildResponse();
 
         assertEquals(
-    "Count of all available ski areas", 170, skiAreasRequest.getSkiAreas().size()
+    "Count of all available ski areas", 168, skiAreasRequest.getSkiAreasMap().size()
         );
     }
 
@@ -30,7 +30,7 @@ public class TestSkiAreas {
         skiAreasRequest.buildResponse();
 
         assertEquals(
-    "Count of CO ski areas",37, skiAreasRequest.getSkiAreas().size()
+    "Count of CO ski areas",35, skiAreasRequest.getSkiAreasMap().size()
         );
     }
 
