@@ -2,12 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link as RouterLink } from 'react-router-dom';
 
 import { Container, Grid, Typography, Table, TableBody, TableCell, TableContainer, TableHead, 
-    TableRow, Paper, Link } from '@material-ui/core';
+    TableRow, Paper, Link, Chip } from '@material-ui/core';
 import { Skeleton } from '@material-ui/lab';
 import { makeStyles } from '@material-ui/styles';
 
 import StationMap from './map/StationMap';
-import { sendServerRequestWithBody } from '../api/restfulAPI';
+import { sendServerRequest } from '../api/restfulAPI';
 import { commasInNumber } from '../utils/NumberCommas';
 
 const useStyles = makeStyles((theme) => ({
@@ -28,10 +28,7 @@ export default function StationInfo(props) {
     let urlParams = useParams();
 
     useEffect(() => {
-        const reqHeader = {requestType: 'stations', requestVersion: 1};
-        const search = {searchField: 'urlName', searchTerm: urlParams.stationUrlName};
-
-        sendServerRequestWithBody({...reqHeader, ...search})
+        sendServerRequest(`stations?searchField=urlName&searchTerm=${urlParams.stationUrlName}`)
         .then((response => {
             if (response.statusCode >= 200 && response.statusCode <= 299) {
                 setSelectedStation(response.body.stations[0]);
@@ -40,6 +37,32 @@ export default function StationInfo(props) {
             }
         }));
     }, [urlParams]);
+
+    const lastUpdatedChip = (selectedStation) => {
+        if(selectedStation.hasOwnProperty('lastUpdated')) {
+            let updatedTime = Date.now() - selectedStation.lastUpdated;
+            let p = 60 * 60 * 1000; // milliseconds in an hour
+            let timeAgo = Math.round(updatedTime / p);
+
+            let unit = '';
+            if (timeAgo < 2) {
+                timeAgo = 1;
+                unit = 'hr';
+            } else if (timeAgo > 1 && timeAgo < 24) {
+                unit = 'hrs';
+            } else if (timeAgo > 23 && timeAgo < 48) {
+                timeAgo = 1;
+                unit = 'day';
+            } else {
+                timeAgo = Math.round(updatedTime / 24);
+                unit = 'days';
+            }
+    
+            return(
+                <Chip size="small" label={`${timeAgo} ${unit} ago`}/>
+            );
+        } 
+    }
 
     const classes = useStyles();
 
@@ -60,7 +83,18 @@ export default function StationInfo(props) {
                                 ? commasInNumber(selectedStation.elevation) : <Skeleton/>}
                         </TableCell>
                         <TableCell>
-                            {selectedStation ? selectedStation.snowDepth : <Skeleton/>}
+                            {selectedStation ? 
+                            <Grid container justify="flex-start" alignItems="center" spacing={2}>
+                                <Grid item>
+                                    <Typography variant="body2">
+                                        {selectedStation.snowDepth}
+                                    </Typography>
+                                </Grid>
+                                <Grid item>
+                                    {lastUpdatedChip(selectedStation)}
+                                </Grid>
+                            </Grid>
+                            : <Skeleton/>}
                         </TableCell>
                         <TableCell>
                             {selectedStation ? selectedStation.triplet : <Skeleton/>}
