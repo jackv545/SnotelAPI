@@ -1,20 +1,18 @@
 import org.junit.Test;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 import java.net.URISyntaxException;
 import java.sql.SQLException;
-import java.util.List;
+
+import static org.junit.Assert.assertEquals;
 
 public class TestStations {
     @Test
     public void testGetAllStations() throws SQLException, URISyntaxException {
         //Request all available snotel stations
-        Stations stationsRequest = new Stations();
+        Stations stationsRequest = new Stations("", "", "", false);
         stationsRequest.buildResponse();
 
-        assertEquals("Count of all available stations",
-                822, stationsRequest.getStations().size());
+        assertEquals("Count of all available stations", 822, stationsRequest.getStations().size());
     }
 
     @Test
@@ -23,8 +21,7 @@ public class TestStations {
         Stations stationsRequest = new Stations("state", "CO", "", false);
         stationsRequest.buildResponse();
 
-        assertEquals("Count of available CO stations",
-                113, stationsRequest.getStations().size());
+        assertEquals("Count of available CO stations", 113, stationsRequest.getStations().size());
     }
 
     //should throw error when search field option is invalid
