@@ -6,7 +6,7 @@ import { Skeleton } from '@material-ui/lab';
 import { Place } from '@material-ui/icons';
 import { makeStyles } from '@material-ui/styles';
 
-import { sendServerRequestWithBody } from '../api/restfulAPI';
+import { sendServerRequest } from '../api/restfulAPI';
 
 const useStyles = makeStyles((theme) => ({
     label: {
@@ -31,9 +31,7 @@ export default function TopSnowPack(props) {
     const [topStations, setTopStations] = useState([]);
 
     useEffect(() => {
-        const requestOptions = {requestType: 'stations', requestVersion: 1};
-        
-        sendServerRequestWithBody({...requestOptions, limit: 5, orderBy: 'snowDepth'})
+        sendServerRequest(`stations?limit=5&orderBy=snowDepth`)
         .then((response => {
             if (response.statusCode >= 200 && response.statusCode <= 299) {
                 setTopStations(response.body.stations);

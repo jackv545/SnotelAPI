@@ -4,7 +4,6 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.List;
 
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.sql.*;
 
@@ -17,33 +16,25 @@ public class Stations extends APIHeader {
 
     private transient boolean mappable;
 
-    public Stations() {
-        this.limit = 822;
-        this.searchField = "name";
-        this.searchTerm = "";
-        this.orderBy = "";
-        this.mappable = false;
-    }
-
     public Stations(String searchField, String searchTerm, String orderBy, Boolean mappable) {
-        this.limit = 822;
+        this.limit = 0;
         this.searchField = searchField;
         this.searchTerm = searchTerm;
         this.orderBy = orderBy;
         this.mappable = mappable;
     }
 
-    public Stations(int limit) {
+    public Stations(int limit, String searchField, String searchTerm, String orderBy, Boolean mappable) {
         this.limit = limit;
-        this.searchField = "name";
-        this.searchTerm = "";
-        this.orderBy = "snowDepth";
-        this.mappable = false;
+        this.searchField = searchField;
+        this.searchTerm = searchTerm;
+        this.orderBy = orderBy;
+        this.mappable = mappable;
     }
 
-    private String queryString() throws SQLException {
-        String[] columns = new String[] {"elevation", "lat", "lng", "timezone", "triplet",
-                "wind", "\"snowDepth\"", "s.state", "name", "st.\"stateName\"", "\"urlName\""};
+    private String query() throws SQLException {
+        String[] columns = new String[]{"elevation", "lat", "lng", "timezone", "triplet", "wind", "\"snowDepth\"",
+            "s.state", "name", "st.\"stateName\"", "\"urlName\", \"lastUpdated\""};
         String query = String.format("SELECT %s ", String.join(", ", columns));
         query = String.format(
             "%sFROM stations s INNER JOIN states st ON s.state = st.state", query
@@ -60,7 +51,7 @@ public class Stations extends APIHeader {
                 query += " WHERE " + column + like;
                 break;
             case "state":
-                column="s.state";
+                column = "s.state";
                 like = "='" + searchTerm + "'";
                 query += " WHERE " + column + like;
                 break;
@@ -86,8 +77,8 @@ public class Stations extends APIHeader {
             default:
                 throw new SQLException("Cannot order by: " + orderBy);
         }
-        query += " LIMIT " + limit;
-        log.info("SQL Query: {}", query);
+        query += limit > 0 ? " LIMIT " + limit : "";
+        log.info("Query: {}", query);
         return query;
     }
 
@@ -95,11 +86,11 @@ public class Stations extends APIHeader {
     public void buildResponse() throws SQLException, URISyntaxException {
         stations = new ArrayList<>();
         try (
-                Connection conn = WebApplication.getDBConnection();
-                Statement st = conn.createStatement();
-                ResultSet rs = st.executeQuery(queryString());
+            Connection conn = WebApplication.getDBConnection();
+            Statement st = conn.createStatement();
+            ResultSet rs = st.executeQuery(query());
         ) {
-            if(mappable) {
+            if (mappable) {
                 while (rs.next()) {
                     stations.add(new Mappable(
                         rs.getString("name"),
@@ -109,15 +100,27 @@ public class Stations extends APIHeader {
                     ));
                 }
             } else {
-                while(rs.next()) {
-                    stations.add(new Station(
-                        rs.getInt("elevation"), rs.getDouble("lat"),
-                        rs.getDouble("lng"), rs.getInt("timezone"),
-                        rs.getString("triplet"), rs.getBoolean("wind"),
-                        rs.getInt("snowDepth"), rs.getString("state"),
-                        rs.getString("name"), rs.getString("stateName"),
-                        rs.getString("urlName")
-                    ));
+                while (rs.next()) {
+                    Timestamp lastUpdated = rs.getTimestamp("lastUpdated");
+                    if(rs.wasNull()) {
+                        stations.add(new Station(
+                            rs.getInt("elevation"), rs.getDouble("lat"),
+                            rs.getDouble("lng"), rs.getInt("timezone"),
+                            rs.getString("triplet"), rs.getBoolean("wind"),
+                            rs.getInt("snowDepth"), rs.getString("state"),
+                            rs.getString("name"), rs.getString("stateName"),
+                            rs.getString("urlName")
+                        ));
+                    } else {
+                        stations.add(new Station(
+                            rs.getInt("elevation"), rs.getDouble("lat"),
+                            rs.getDouble("lng"), rs.getInt("timezone"),
+                            rs.getString("triplet"), rs.getBoolean("wind"),
+                            rs.getInt("snowDepth"), rs.getString("state"),
+                            rs.getString("name"), rs.getString("stateName"),
+                            rs.getString("urlName"), lastUpdated.toLocalDateTime()
+                        ));
+                    }
                 }
             }
         }

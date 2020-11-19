@@ -4,7 +4,7 @@ import { Link as RouterLink } from 'react-router-dom';
 import { Link, Grid, Card, CardContent, Typography } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 
-import { sendServerRequestWithBody } from '../../api/restfulAPI';
+import { sendServerRequest } from '../../api/restfulAPI';
 import { commasInNumber } from '../../utils/NumberCommas';
 import ListSkeleton from './ListSkeleton';
 
@@ -33,11 +33,8 @@ export default function BackcountryStations(props) {
     //get stations from state url param
     useEffect(() => {
         let isMounted = true;
-        
-        const reqHeader = { requestType: 'stations', requestVersion: 1 };
-        const search = { searchField: 'state', searchTerm: props.state };
 
-        sendServerRequestWithBody({ ...reqHeader, ...search, orderBy: props.selectedSort })
+        sendServerRequest(`stations?searchField=state&searchTerm=${props.state}&orderBy=${props.selectedSort}`)
             .then((response => {
                 if (response.statusCode >= 200 && response.statusCode <= 299) {
                     if (isMounted) {

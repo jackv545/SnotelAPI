@@ -7,7 +7,7 @@ import { AppBar, Toolbar, Grid, TextField, InputAdornment, Popper, Paper,
 import { Search, Place } from '@material-ui/icons';
 import { makeStyles } from '@material-ui/styles';
 
-import { sendServerRequestWithBody } from '../api/restfulAPI';
+import { sendServerRequest } from '../api/restfulAPI';
 
 import HomeButtonOrange from '../images/HomeButtonOrange.png';
 import HomeButtonBlue from '../images/HomeButtonBlue.png';
@@ -87,8 +87,7 @@ export default function Navigation(props) {
     //Load search suggestions into client after the first letter is typed
     useEffect(() => {
         if(inputValueFirstLetter !== '') {
-            sendServerRequestWithBody({ requestType: 'stations', requestVersion: 1, 
-                searchField:'name',  searchTerm:inputValueFirstLetter })
+            sendServerRequest(`stations?searchField=name&searchTerm=${inputValueFirstLetter}`)
             .then((response => {
                 if (response.statusCode >= 200 && response.statusCode <= 299) {
                     setStations(response.body.stations);

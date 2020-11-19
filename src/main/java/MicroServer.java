@@ -1,13 +1,18 @@
-import com.google.gson.Gson;
+import com.google.gson.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import spark.Request;
 import spark.Response;
 import spark.Spark;
 
+import java.io.IOException;
 import java.lang.reflect.Type;
 import java.net.URISyntaxException;
 import java.sql.SQLException;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 
 public class MicroServer {
     private final Logger log = LoggerFactory.getLogger(MicroServer.class);
@@ -31,9 +36,9 @@ public class MicroServer {
     private void processRestfulAPIrequests() {
         Spark.get("/", this::processConfigRequest);
         Spark.get("api/config", this::processConfigRequest);
-        Spark.post("api/stations", this::processStationsRequest);
+        Spark.get("api/stations", this::processStationsRequest);
         Spark.post("api/snotel", this::processSnotelRequest);
-        Spark.post("api/dailySnowDepth", this::processDailySnowDepthRequest);
+        Spark.patch("api/updateSnowDepth", this::processUpdateSnowDepthRequest);
         Spark.get("api/states", this::processStatesRequest);
         Spark.get("api/updateResorts", this::processUpdateResortsRequest);
         Spark.get("api/skiAreas", this::processSkiAreasRequest);
@@ -48,15 +53,22 @@ public class MicroServer {
     }
 
     private String processStationsRequest(Request request, Response response) {
-        return processPostRequest(Stations.class, request, response);
+        String limit = request.queryParamOrDefault("limit", "0");
+        String searchField = request.queryParamOrDefault("searchField", "");
+        String searchTerm = request.queryParamOrDefault("searchTerm", "");
+        String orderBy = request.queryParamOrDefault("orderBy", "");
+        return processGetRequest(new Stations(Integer.parseInt(limit), searchField, searchTerm, orderBy, false),
+            request, response);
     }
 
     private String processSnotelRequest(Request request, Response response) {
         return processPostRequest(Snotel.class, request, response);
     }
 
-    private String processDailySnowDepthRequest(Request request, Response response) {
-        return processPostRequest(DailySnowDepth.class, request, response);
+    private String processUpdateSnowDepthRequest(Request request, Response response) {
+        String state = request.queryParams("state");
+        String interval = request.queryParamOrDefault("interval", "hourly");
+        return processGetRequest(new UpdateSnowDepth(state, interval), request, response);
     }
 
     private String processStatesRequest(Request request, Response response) {
@@ -103,21 +115,26 @@ public class MicroServer {
     }
 
     private String processGetRequest(APIHeader requestType, Request request, Response response) {
-        log.info("{} request: {}", requestType.getRequestType(), HTTPrequestToJson(request));
+        log.info("{} request: {}", requestType.getRequestType(), HTTPRequestToJson(request, false, false));
         response.type("application/json");
         response.header("Access-Control-Allow-Origin", "*");
         response.status(200);
 
         try {
-            Gson jsonConverter = new Gson();
+            Gson jsonConverter =
+                new GsonBuilder().registerTypeAdapter(LocalDateTime.class, new LocalDateTimeAdapter()).create();
             APIHeader apiRequest = requestType;
             apiRequest.buildResponse();
             String responseBody = jsonConverter.toJson(apiRequest);
-            log.trace("{} response: {}", requestType.getRequestType(), responseBody);
+            log.debug("{} response: {}", requestType.getRequestType(), responseBody);
             return responseBody;
-        } catch (NumberFormatException | SQLException e) {
+        } catch (SQLException | IllegalArgumentException e) {
             log.error("Exception:", e);
             response.status(400);
+            return request.body();
+        } catch (IOException e) {
+            log.error("Exception:", e);
+            response.status(502);
             return request.body();
         } catch (Exception e) {
             log.error("Exception:", e);
@@ -127,7 +144,7 @@ public class MicroServer {
     }
 
     private String processPostRequest(Type requestType, Request request, Response response) {
-        log.info("API request: {}", HTTPrequestToJson(request));
+        log.info("API request: {}", HTTPRequestToJson(request, true, false));
         response.type("application/json");
         response.header("Access-Control-Allow-Origin", "*");
         response.status(200);
@@ -137,7 +154,7 @@ public class MicroServer {
             APIHeader apiRequest = jsonConverter.fromJson(request.body(), requestType);
             apiRequest.buildResponse();
             String responseBody = jsonConverter.toJson(apiRequest);
-            log.trace("API response: {}", responseBody);
+            log.info("API response: {}", responseBody);
             return responseBody;
         } catch(URISyntaxException e){
             log.error("URISyntaxException: {}", e);
@@ -154,29 +171,35 @@ public class MicroServer {
         }
     }
 
-    private String HTTPrequestToJson(Request request) {
-        return "{\n"
-                + "\t\"attributes\":\"" + request.attributes() + "\",\n"
-                + "\t\"body\":\"" + request.body() + "\",\n"
-                + "\t\"contentLength\":\"" + request.contentLength() + "\",\n"
-                + "\t\"contentType\":\"" + request.contentType() + "\",\n"
-                + "\t\"contextPath\":\"" + request.contextPath() + "\",\n"
-                + "\t\"cookies\":\"" + request.cookies() + "\",\n"
-                + "\t\"headers\":\"" + request.headers() + "\",\n"
-                + "\t\"host\":\"" + request.host() + "\",\n"
-                + "\t\"ip\":\"" + request.ip() + "\",\n"
-                + "\t\"params\":\"" + request.params() + "\",\n"
-                + "\t\"pathInfo\":\"" + request.pathInfo() + "\",\n"
-                + "\t\"serverPort\":\"" + request.port() + "\",\n"
-                + "\t\"protocol\":\"" + request.protocol() + "\",\n"
-                + "\t\"queryParams\":\"" + request.queryParams() + "\",\n"
-                + "\t\"requestMethod\":\"" + request.requestMethod() + "\",\n"
-                + "\t\"scheme\":\"" + request.scheme() + "\",\n"
-                + "\t\"servletPath\":\"" + request.servletPath() + "\",\n"
-                + "\t\"session\":\"" + request.session() + "\",\n"
-                + "\t\"uri()\":\"" + request.uri() + "\",\n"
-                + "\t\"url()\":\"" + request.url() + "\",\n"
-                + "\t\"userAgent\":\"" + request.userAgent() + "\"\n"
-                + "}";
+    private String HTTPRequestToJson(Request request, Boolean includeBody, Boolean verbose) {
+        StringBuilder logMessage = new StringBuilder("{\n");
+        logMessage.append("\t\"requestMethod\":\"" + request.requestMethod() + "\", ");
+        logMessage.append("\"scheme\":\"" + request.scheme() + "\",\n");
+        logMessage.append("\t\"url()\":\"" + request.url() + "\", ");
+        logMessage.append("\"queryParams\":\"" + request.queryParams() + "\",\n");
+        logMessage.append("\t\"userAgent\":\"" + request.userAgent() + "\", ");
+        logMessage.append("\"ip\":\"" + request.ip() + "\",\n");
+        if(includeBody) {
+            logMessage.append("\t\"body\":\"" + request.body() + "\",\n");
+            logMessage.append("\t\"contentLength\":\"" + request.contentLength() + "\", ");
+            logMessage.append("\"contentType\":\"" + request.contentType() + "\",\n");
+        }
+        if(verbose) {
+            logMessage.append("\t\"attributes\":\"" + request.attributes() + "\",\n");
+            logMessage.append("\t\"contextPath\":\"" + request.contextPath() + "\",\n");
+            logMessage.append("\t\"cookies\":\"" + request.cookies() + "\",\n");
+            logMessage.append("\t\"headers\":\"" + request.headers() + "\",\n");
+            logMessage.append("\t\"serverPort\":\"" + request.port() + "\",\n");
+            logMessage.append("\t\"session\":\"" + request.session() + "\",\n");
+        }
+        logMessage.append("}");
+
+        return logMessage.toString();
+    }
+
+    class LocalDateTimeAdapter implements JsonSerializer<LocalDateTime> {
+        public JsonElement serialize(LocalDateTime date, Type typeOfSrc, JsonSerializationContext context) {
+            return new JsonPrimitive(date.toInstant(ZoneOffset.ofHours(0)).toEpochMilli());
+        }
     }
 }
