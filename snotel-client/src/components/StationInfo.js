@@ -9,6 +9,7 @@ import { makeStyles } from '@material-ui/styles';
 import StationMap from './map/StationMap';
 import { sendServerRequest } from '../api/restfulAPI';
 import { commasInNumber } from '../utils/NumberCommas';
+import PageNotFound from './margins/PageNotFound';
 
 const useStyles = makeStyles((theme) => ({
     header: {
@@ -26,12 +27,18 @@ export default function StationInfo(props) {
     }, [selectedStation]);
 
     let urlParams = useParams();
+    const [locationNotFound, setlocationNotFound] = useState(false);
 
     useEffect(() => {
         sendServerRequest(`stations?searchField=urlName&searchTerm=${urlParams.stationUrlName}`)
         .then((response => {
             if (response.statusCode >= 200 && response.statusCode <= 299) {
-                setSelectedStation(response.body.stations[0]);
+                if(response.body.stations.length > 0) {
+                    setlocationNotFound(false);
+                    setSelectedStation(response.body.stations[0]);
+                } else {
+                    setlocationNotFound(true);
+                }
             } else {
                 console.error("Response code: ", response.statusCode, response.statusText);
             }
@@ -122,46 +129,48 @@ export default function StationInfo(props) {
 
     return(
         <Container maxWidth="lg">
-            <Grid container spacing={1} className={classes.header}>
-                <Grid item xs={12} sm={12} md={4}>
-                    <Typography variant="h4" component="h1">
-                        {selectedStation ? selectedStation.name : <Skeleton/>}
-                    </Typography>
-                    <Grid container alignItems="center" spacing={1}>
-                        <Grid item>
-                            {selectedStation ? <Link 
-                                color="secondary" underline="none" variant="body1"
-                                component={RouterLink} 
-                                to={selectedStation ? `/explore/${selectedStation.state}` : '/'}
-                            >
-                                {selectedStation.stateName} 
-                            </Link> : <Skeleton width="10ch"/>}
-                        </Grid>
-                        <Grid item>
-                            <Typography variant="h6" component="span">
-                                {' · '}
-                            </Typography>
-                        </Grid>
-                        <Grid item>
-                            <Typography>
-                                United States
-                            </Typography>
+            {locationNotFound ? <PageNotFound/>
+                : <Grid container spacing={1} className={classes.header}>
+                    <Grid item xs={12} sm={12} md={4}>
+                        <Typography variant="h4" component="h1">
+                            {selectedStation ? selectedStation.name : <Skeleton/>}
+                        </Typography>
+                        <Grid container alignItems="center" spacing={1}>
+                            <Grid item>
+                                {selectedStation ? <Link 
+                                    color="secondary" underline="none" variant="body1"
+                                    component={RouterLink} 
+                                    to={selectedStation ? `/explore/${selectedStation.state}` : '/'}
+                                >
+                                    {selectedStation.stateName} 
+                                </Link> : <Skeleton width="10ch"/>}
+                            </Grid>
+                            <Grid item>
+                                <Typography variant="h6" component="span">
+                                    {' · '}
+                                </Typography>
+                            </Grid>
+                            <Grid item>
+                                <Typography>
+                                    United States
+                                </Typography>
+                            </Grid>
                         </Grid>
                     </Grid>
-                </Grid>
-                <Grid item xs={12} sm={12} md={8}>
-                    {infoTable}
-                </Grid>
-                <Grid item xs={12} sm={12} md={4}>
+                    <Grid item xs={12} sm={12} md={8}>
+                        {infoTable}
+                    </Grid>
+                    <Grid item xs={12} sm={12} md={4}>
 
+                    </Grid>
+                    <Grid item xs={12} sm={12} md={8}>
+                        <StationMap
+                            prefersDarkMode={props.prefersDarkMode}
+                            selectedStation={selectedStation}
+                        />
+                    </Grid>
                 </Grid>
-                <Grid item xs={12} sm={12} md={8}>
-                    <StationMap
-                        prefersDarkMode={props.prefersDarkMode}
-                        selectedStation={selectedStation}
-                    />
-                </Grid>
-            </Grid>
+            }
         </Container>
     );
 }
