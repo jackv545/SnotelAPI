@@ -78,7 +78,7 @@ public class Stations extends APIHeader {
                 throw new SQLException("Cannot order by: " + orderBy);
         }
         query += limit > 0 ? " LIMIT " + limit : "";
-        log.info("Query: {}", query);
+        log.debug("Query: {}", query);
         return query;
     }
 

@@ -14,6 +14,10 @@ import PageNotFound from './margins/PageNotFound';
 const useStyles = makeStyles((theme) => ({
     header: {
         marginTop: theme.spacing(3)
+    },
+    chip: {
+        backgroundColor: theme.palette.type === 'light' 
+            ? theme.palette.grey[400] : theme.palette.grey[700]
     }
 }));
 
@@ -61,12 +65,12 @@ export default function StationInfo(props) {
                 timeAgo = 1;
                 unit = 'day';
             } else {
-                timeAgo = Math.round(updatedTime / 24);
+                timeAgo = Math.round(timeAgo / 24);
                 unit = 'days';
             }
     
             return(
-                <Chip size="small" label={`${timeAgo} ${unit} ago`}/>
+                <Chip size="small" label={`${timeAgo} ${unit} ago`} classes={{ root: classes.chip }}/>
             );
         } 
     }
