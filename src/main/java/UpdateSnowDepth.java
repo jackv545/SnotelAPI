@@ -19,7 +19,7 @@ public class UpdateSnowDepth extends APIHeader {
     private final transient Logger log = LoggerFactory.getLogger(UpdateSnowDepth.class);
 
     private String state, interval;
-    private int rowsUpdated;
+    private int rowsUpdated, rowCount;
 
     public UpdateSnowDepth(String state, String interval) {
         this.requestVersion = 1;
@@ -42,7 +42,7 @@ public class UpdateSnowDepth extends APIHeader {
         return hour;
     }
 
-    LocalDateTime updatedTime (String timeStamp) { //parse snotel report time string into UTC timestamp for db
+    LocalDateTime updatedTime(String timeStamp) { //parse snotel report time string into UTC timestamp for db
         LocalDateTime snotelTime = LocalDateTime.parse(timeStamp, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
         LocalDateTime dbTime = snotelTime.atZone(SNOTEL_ZONE).withZoneSameInstant(DB_ZONE).toLocalDateTime();
 
@@ -57,11 +57,12 @@ public class UpdateSnowDepth extends APIHeader {
         if (interval.equals("hourly")) {
             url.append("/customMultipleStationReport/hourly/start_of_period/state=%22" + state + "%22%20AND%20");
             url.append("network=%22SNTLT%22,%22SNTL%22%20AND%20element=%22SNWD%22%20AND%20outServiceDate=%22");
-            url.append("2100-01-01%22%7Cname/-23,0:H%7C" + reportHour() + "/stationId,SNWD::value?fitToScreen=false");
+            url.append("2100-01-01%22%7Cname/-23,0:H%7C" + reportHour() + "/stationId,SNWD::value,WTEQ::value");
+            url.append("?fitToScreen=false");
         } else {
             url.append("/customMultipleStationReport/daily/start_of_period/state=%22" + state + "%22%20AND%20network=");
             url.append("%22SNTLT%22,%22SNTL%22%20AND%20element=%22SNWD%22%20AND%20outServiceDate=%222100-01-01%22");
-            url.append("%7Cname/0,0/name,stationId,SNWD::value?fitToScreen=false");
+            url.append("%7Cname/0,0/name,stationId,SNWD::value,WTEQ::value?fitToScreen=false");
 
             String reportDate = LocalDateTime.now(SNOTEL_ZONE).format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
             log.info("Getting {} start of day snow report for {}", state, reportDate);
@@ -88,50 +89,84 @@ public class UpdateSnowDepth extends APIHeader {
         }
     }
 
-    private void checkQueryStatus(int status, String triplet) {
-        if (status != 1) {
-            log.error("SQL Status: {}, row does not exist: {}", status, triplet);
+    boolean newSnowDataValid(int snowDepth, int lastSnowDepth, double swe, double lastSwe) {
+        if (snowDepth - lastSnowDepth > 12 && !(lastSnowDepth == 0 || lastSwe == 0)) {
+            double snowIncreaseRatio = (double) snowDepth / lastSnowDepth;
+            double sweIncreaseRatio = swe / lastSwe;
+            return snowIncreaseRatio - sweIncreaseRatio < 1.13;
+        } else {
+            boolean reasonableSnowIncrease = snowDepth - lastSnowDepth < 48;
+            if(swe == 0) {
+                return reasonableSnowIncrease;
+            } else {
+                double snowDensity = (double) snowDepth / swe;
+                return reasonableSnowIncrease && snowDensity < 25;
+            }
         }
     }
 
     private void updateDatabase(InputStreamReader isr) throws SQLException, IOException, URISyntaxException {
-        String query = "UPDATE stations SET \"snowDepth\"=?, \"lastUpdated\"=? WHERE triplet=?";
+        String updateQuery = "UPDATE stations SET \"snowDepth\"=?, \"lastUpdated\"=?, swe=? WHERE triplet=?";
+        String selectQuery = "SELECT \"snowDepth\", swe FROM stations WHERE triplet=?";
 
         try (
             BufferedReader in = new BufferedReader(isr);
             Connection conn = WebApplication.getDBConnection();
-            PreparedStatement stmt = conn.prepareStatement(query);
+            PreparedStatement updateStmt = conn.prepareStatement(updateQuery);
+            PreparedStatement selectStmt = conn.prepareStatement(selectQuery);
         ) {
             String inputLine;
             int nonCommentLine = 0;
-            int rowCount = rowCount(conn);
+            rowCount = rowCount(conn);
 
             while ((inputLine = in.readLine()) != null) {
                 if (inputLine.charAt(0) != '#') {
                     if (nonCommentLine != 0) {
                         String[] result = inputLine.split(",", -1);
-                        int snowDepth = 0;
+                        String triplet = String.format("%d:%s:SNTL", parseInt(result[1]), state);
+
+                        selectStmt.setString(1, triplet);
+                        int snowDepth, lastSnowDepth;
+                        double swe, lastSwe;
+
+                        ResultSet rs = selectStmt.executeQuery();
+                        if (rs.next()) {
+                            lastSnowDepth = rs.getInt("snowDepth");
+                            lastSwe = rs.getDouble("swe");
+                            log.debug("Last snow data for {} snowDepth: {} swe: {}", triplet, lastSnowDepth, lastSwe);
+                        } else {
+                            log.error("{} not found in db", triplet);
+                            continue;
+                        }
+
                         if (result[2].isEmpty()) {
                             continue;
                         } else {
                             snowDepth = parseInt(result[2]);
-                        }
-                        String triplet = String.format("%d:%s:SNTL", parseInt(result[1]), state);
+                            swe = result[3].isEmpty() ? 0 : Double.parseDouble(result[3]);
 
-                        stmt.setInt(1, snowDepth);
-                        if(interval.equals("hourly")) {
-                            stmt.setTimestamp(2, Timestamp.valueOf(updatedTime(result[0])));
+                            if (!newSnowDataValid(snowDepth, lastSnowDepth, swe, lastSwe)) {
+                                log.error("Invalid snow data for {}", triplet);
+                                log.error("\tsnowDepth: {}, lastSnowDepth: {}, swe: {}, lastSwe: {}", snowDepth,
+                                    lastSnowDepth, swe, lastSwe);
+                                continue;
+                            }
+                        }
+
+                        updateStmt.setInt(1, snowDepth);
+                        updateStmt.setDouble(3, swe);
+                        if (interval.equals("hourly")) {
+                            updateStmt.setTimestamp(2, Timestamp.valueOf(updatedTime(result[0])));
                         } else {
-                            stmt.setTimestamp(2,
+                            updateStmt.setTimestamp(2,
                                 Timestamp.valueOf(LocalDateTime.now(DB_ZONE).withSecond(0).withNano(0)));
                         }
-                        stmt.setString(3, triplet);
-                        log.debug(stmt.toString());
+                        updateStmt.setString(4, triplet);
+                        log.debug(updateStmt.toString());
 
-                        int status = stmt.executeUpdate();
-                        checkQueryStatus(status, triplet);
+                        int status = updateStmt.executeUpdate();
                         rowsUpdated += status;
-                        log.debug("{} snowDepth: {} {}/{}", triplet, snowDepth, rowsUpdated, rowCount);
+                        log.debug("{} snowDepth: {} swe: {} {}/{}", triplet, snowDepth, swe, rowsUpdated, rowCount);
                     }
                     nonCommentLine++;
                 }
