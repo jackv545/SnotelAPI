@@ -12,11 +12,12 @@ import java.sql.*;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
 
 import static java.lang.Integer.parseInt;
 
 public class UpdateSnowDepth extends APIHeader {
-    private final transient Logger log = LoggerFactory.getLogger(UpdateSnowDepth.class);
+    private static final Logger log = LoggerFactory.getLogger(UpdateSnowDepth.class);
 
     private String state, interval;
     private int rowsUpdated, rowCount;
@@ -89,14 +90,26 @@ public class UpdateSnowDepth extends APIHeader {
         }
     }
 
-    boolean newSnowDataValid(int snowDepth, int lastSnowDepth, double swe, double lastSwe) {
+    static String[] splitReportLine(String inputLine) {
+        String[] result = inputLine.split(",", -1);
+        if (result.length < 4 || result.length > 4) {
+            log.warn("Unexpected split result: {}", Arrays.toString(result));
+        }
+        return result;
+    }
+
+    static boolean newSnowDataValid(int snowDepth, int lastSnowDepth, double swe, double lastSwe) {
+        if (snowDepth < 0) {
+            return false;
+        }
+
         if (snowDepth - lastSnowDepth > 12 && !(lastSnowDepth == 0 || lastSwe == 0)) {
             double snowIncreaseRatio = (double) snowDepth / lastSnowDepth;
             double sweIncreaseRatio = swe / lastSwe;
             return snowIncreaseRatio - sweIncreaseRatio < 1.13;
         } else {
             boolean reasonableSnowIncrease = snowDepth - lastSnowDepth < 48;
-            if(swe == 0) {
+            if (swe == 0) {
                 return reasonableSnowIncrease;
             } else {
                 double snowDensity = (double) snowDepth / swe;
@@ -122,10 +135,17 @@ public class UpdateSnowDepth extends APIHeader {
             while ((inputLine = in.readLine()) != null) {
                 if (inputLine.charAt(0) != '#') {
                     if (nonCommentLine != 0) {
-                        String[] result = inputLine.split(",", -1);
+                        String[] result = splitReportLine(inputLine);
+                        if (result[1].isEmpty()) {
+                            log.error("No station ID: {}", inputLine);
+                            continue;
+                        }
+                        if (result[2].isEmpty()) { //no snowDepth
+                            continue;
+                        }
                         String triplet = String.format("%d:%s:SNTL", parseInt(result[1]), state);
-
                         selectStmt.setString(1, triplet);
+
                         int snowDepth, lastSnowDepth;
                         double swe, lastSwe;
 
@@ -135,22 +155,18 @@ public class UpdateSnowDepth extends APIHeader {
                             lastSwe = rs.getDouble("swe");
                             log.debug("Last snow data for {} snowDepth: {} swe: {}", triplet, lastSnowDepth, lastSwe);
                         } else {
-                            log.error("{} not found in db", triplet);
+                            log.warn("{} not found in db", triplet);
                             continue;
                         }
 
-                        if (result[2].isEmpty()) {
-                            continue;
-                        } else {
-                            snowDepth = parseInt(result[2]);
-                            swe = result[3].isEmpty() ? 0 : Double.parseDouble(result[3]);
+                        snowDepth = parseInt(result[2]);
+                        swe = result[3].isEmpty() ? 0 : Double.parseDouble(result[3]);
 
-                            if (!newSnowDataValid(snowDepth, lastSnowDepth, swe, lastSwe)) {
-                                log.error("Invalid snow data for {}", triplet);
-                                log.error("\tsnowDepth: {}, lastSnowDepth: {}, swe: {}, lastSwe: {}", snowDepth,
-                                    lastSnowDepth, swe, lastSwe);
-                                continue;
-                            }
+                        if (!newSnowDataValid(snowDepth, lastSnowDepth, swe, lastSwe)) {
+                            log.error("Invalid snow data for {}", triplet);
+                            log.error("\tsnowDepth: {}, lastSnowDepth: {}, swe: {}, lastSwe: {}", snowDepth,
+                                lastSnowDepth, swe, lastSwe);
+                            continue;
                         }
 
                         updateStmt.setInt(1, snowDepth);
