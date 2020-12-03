@@ -19,8 +19,9 @@ import static java.lang.Integer.parseInt;
 public class UpdateSnowDepth extends APIHeader {
     private static final Logger log = LoggerFactory.getLogger(UpdateSnowDepth.class);
 
-    private String state, interval;
+    private final String state, interval;
     private int rowsUpdated, rowCount;
+    private transient double avgSnowDepth, avgSnowDensity;
 
     public UpdateSnowDepth(String state, String interval) {
         this.requestVersion = 1;
@@ -32,6 +33,31 @@ public class UpdateSnowDepth extends APIHeader {
             throw new IllegalArgumentException("invalid interval");
         }
         this.rowsUpdated = 0;
+    }
+
+    //unit test only
+    UpdateSnowDepth(String state, double avgSnowDepth, double avgSnowDensity) {
+        this(state, "hourly");
+        this.avgSnowDepth = avgSnowDepth;
+        this.avgSnowDensity = avgSnowDensity;
+    }
+
+    private void setAverages() throws URISyntaxException, SQLException {
+        String query = "SELECT \"avgSnowDepth\", \"avgSnowDensity\" FROM states WHERE state=?";
+        try (
+            Connection conn = WebApplication.getDBConnection();
+            PreparedStatement stmt = conn.prepareStatement(query);
+        ) {
+            stmt.setString(1, state);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                avgSnowDepth = rs.getDouble("avgSnowDepth");
+                avgSnowDensity = rs.getDouble("avgSnowDensity");
+            } else {
+                throw new SQLException("cannot get state average snow data");
+            }
+            rs.close();
+        }
     }
 
     private final transient ZoneId SNOTEL_ZONE = ZoneId.of("GMT-8"); //snotel report time zone
@@ -98,23 +124,35 @@ public class UpdateSnowDepth extends APIHeader {
         return result;
     }
 
-    static boolean newSnowDataValid(int snowDepth, int lastSnowDepth, double swe, double lastSwe) {
+    static boolean reasonable(int snowDepth, double avgSnowDepth) {
+        boolean reasonablyLess = (double) snowDepth - avgSnowDepth >= (-0.5 * avgSnowDepth);
+        boolean reasonablyMore = (double) snowDepth - avgSnowDepth <= (1.5 * avgSnowDepth);
+        return reasonablyLess && reasonablyMore;
+    }
+
+    boolean newSnowDataValid(int snowDepth, int lastSnowDepth, double swe) {
         if (snowDepth < 0) {
             return false;
+        } else if ((snowDepth <= 12 && lastSnowDepth <= 12)) {
+            return true;
+        } else if (snowDepth - lastSnowDepth > -4 && snowDepth - lastSnowDepth < 4
+            && reasonable(snowDepth, avgSnowDepth)) {
+            return true;
         }
 
-        if (snowDepth - lastSnowDepth > 12 && !(lastSnowDepth == 0 || lastSwe == 0)) {
-            double snowIncreaseRatio = (double) snowDepth / lastSnowDepth;
-            double sweIncreaseRatio = swe / lastSwe;
-            return snowIncreaseRatio - sweIncreaseRatio < 1.13;
-        } else {
-            boolean reasonableSnowIncrease = snowDepth - lastSnowDepth < 48;
-            if (swe == 0) {
-                return reasonableSnowIncrease;
-            } else {
-                double snowDensity = (double) snowDepth / swe;
-                return reasonableSnowIncrease && snowDensity < 25;
+        double reportSnowDensity = SnowDensity.calculateDensity(snowDepth, swe);
+        if (reportSnowDensity < 0) { //no swe
+            return reasonable(snowDepth, avgSnowDepth);
+        } else if (snowDepth < lastSnowDepth) { //snow melting
+            if (snowDepth - lastSnowDepth >= -12) {
+                return reportSnowDensity - avgSnowDensity > -0.12 && reportSnowDensity - avgSnowDensity < 0.12;
             }
+            return reportSnowDensity - avgSnowDensity > -0.11 && reportSnowDensity - avgSnowDensity < 0.11;
+        } else { //new snow
+            if (Math.abs(snowDepth - lastSnowDepth) <= 12) {
+                return reportSnowDensity - avgSnowDensity > -0.12 && reportSnowDensity - avgSnowDensity < 0.12;
+            }
+            return reportSnowDensity - avgSnowDensity > -0.09 && reportSnowDensity - avgSnowDensity < 0.09;
         }
     }
 
@@ -133,7 +171,7 @@ public class UpdateSnowDepth extends APIHeader {
             rowCount = rowCount(conn);
 
             while ((inputLine = in.readLine()) != null) {
-                if (inputLine.charAt(0) != '#') {
+                if (inputLine.length() > 0 && inputLine.charAt(0) != '#') {
                     if (nonCommentLine != 0) {
                         String[] result = splitReportLine(inputLine);
                         if (result[1].isEmpty()) {
@@ -155,14 +193,15 @@ public class UpdateSnowDepth extends APIHeader {
                             lastSwe = rs.getDouble("swe");
                             log.debug("Last snow data for {} snowDepth: {} swe: {}", triplet, lastSnowDepth, lastSwe);
                         } else {
-                            log.warn("{} not found in db", triplet);
+                            log.debug("{} not found in db", triplet);
                             continue;
                         }
+                        rs.close();
 
                         snowDepth = parseInt(result[2]);
                         swe = result[3].isEmpty() ? 0 : Double.parseDouble(result[3]);
 
-                        if (!newSnowDataValid(snowDepth, lastSnowDepth, swe, lastSwe)) {
+                        if (!newSnowDataValid(snowDepth, lastSnowDepth, swe)) {
                             log.error("Invalid snow data for {}", triplet);
                             log.error("\tsnowDepth: {}, lastSnowDepth: {}, swe: {}, lastSwe: {}", snowDepth,
                                 lastSnowDepth, swe, lastSwe);
@@ -199,6 +238,9 @@ public class UpdateSnowDepth extends APIHeader {
         int status = con.getResponseCode();
 
         if (status > 199 && status < 300) {
+            setAverages();
+            log.info("\tavg snow depth: {}, avg snow density: {}", String.format("%.5g", avgSnowDepth),
+                String.format("%.3g", avgSnowDensity));
             updateDatabase(new InputStreamReader(con.getInputStream()));
         } else {
             log.error("Snotel response: {}", con.getResponseMessage());

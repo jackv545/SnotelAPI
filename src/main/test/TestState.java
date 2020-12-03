@@ -3,6 +3,7 @@ import static org.junit.Assert.assertEquals;
 
 import java.net.URISyntaxException;
 import java.sql.SQLException;
+import java.util.List;
 
 public class TestState {
     @Test
@@ -27,5 +28,11 @@ public class TestState {
         stateRequest.buildResponse();
 
         assertEquals("State bounds array size", 2, stateRequest.getBounds().length);
+    }
+
+    @Test
+    public void testGetAllStates() throws URISyntaxException, SQLException {
+        List<String> states = States.getAllStates();
+        assertEquals(states.size(), 13);
     }
 }

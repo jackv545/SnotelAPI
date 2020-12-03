@@ -99,7 +99,7 @@ export default function StationInfo(props) {
                     <TableRow>
                         <TableCell>Altitude (ft)</TableCell>
                         <TableCell>Snow Depth (in)</TableCell>
-                        <TableCell>Identifier</TableCell>
+                        <TableCell>Source</TableCell>
                     </TableRow>
                 </TableHead>
                 <TableBody>
