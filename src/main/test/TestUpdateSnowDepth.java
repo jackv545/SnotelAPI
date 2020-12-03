@@ -28,55 +28,78 @@ public class TestUpdateSnowDepth {
 
     @Test
     public void testUnreasonableSnowDepthValid() {
-        boolean valid = UpdateSnowDepth.newSnowDataValid(60, 28, 12.0, 12.0);
+        UpdateSnowDepth updateSnowDepth = new UpdateSnowDepth("CO", 13.37, 0.238);
+        boolean valid = updateSnowDepth.newSnowDataValid(70, 28, 6.0);
         assertFalse("Snow depth and swe unreasonable", valid);
     }
 
     @Test
     public void testNewSnowValid() {
-        boolean valid = UpdateSnowDepth.newSnowDataValid(32, 26, 6, 5.5);
+        UpdateSnowDepth updateSnowDepth = new UpdateSnowDepth("AK", 20.2, 0.213);
+        boolean valid = updateSnowDepth.newSnowDataValid(32, 26, 6);
         assertTrue("New snow", valid);
     }
 
     @Test
     public void testMeltingSnowValid() {
-        boolean valid = UpdateSnowDepth.newSnowDataValid(22, 26, 4.8, 5.5);
+        UpdateSnowDepth updateSnowDepth = new UpdateSnowDepth("CO", 13.37, 0.238);
+        boolean valid = updateSnowDepth.newSnowDataValid(22, 26, 4.8);
         assertTrue("Melting snow", valid);
     }
 
     @Test
     public void testFirstSnowValid() {
-        boolean valid = UpdateSnowDepth.newSnowDataValid(4, 0, 0.6, 0);
+        UpdateSnowDepth updateSnowDepth = new UpdateSnowDepth("CO", 13.37, 0.238);
+        boolean valid = updateSnowDepth.newSnowDataValid(4, 0, 0.81);
         assertTrue("First snow", valid);
     }
 
     @Test
     public void snowCompletelyMeltedValid() {
-        boolean valid = UpdateSnowDepth.newSnowDataValid(0, 4, 0.1, 0.6);
+        UpdateSnowDepth updateSnowDepth = new UpdateSnowDepth("CO", 13.37, 0.238);
+        boolean valid = updateSnowDepth.newSnowDataValid(0, 4, 0.1);
         assertTrue("New snow", valid);
     }
 
     @Test
     public void testNoChangeValid() {
-        boolean valid = UpdateSnowDepth.newSnowDataValid(4, 4, 0.3, 0.2);
+        UpdateSnowDepth updateSnowDepth = new UpdateSnowDepth("CO", 13.37, 0.238);
+        boolean valid = updateSnowDepth.newSnowDataValid(26, 26, 8.3);
         assertTrue("No change", valid);
     }
 
     @Test
     public void noSweValid() {
-        boolean valid = UpdateSnowDepth.newSnowDataValid(70, 4, 0, 0);
+        UpdateSnowDepth updateSnowDepth = new UpdateSnowDepth("CO", 13.37, 0.238);
+        boolean valid = updateSnowDepth.newSnowDataValid(70, 4, 0);
+        assertFalse("No swe", valid);
+    }
+
+    @Test
+    public void noSweValid2() {
+        UpdateSnowDepth updateSnowDepth = new UpdateSnowDepth("CO", 13.37, 0.238);
+        boolean valid = updateSnowDepth.newSnowDataValid(34, 10, 0);
+        assertFalse("No swe", valid);
+    }
+
+    @Test
+    public void noSweValid3() {
+        UpdateSnowDepth updateSnowDepth = new UpdateSnowDepth("CO", 17.0, 0.238);
+        boolean valid = updateSnowDepth.newSnowDataValid(1, 25, 0);
         assertFalse("No swe", valid);
     }
 
     @Test
     public void sanityCheckValid() {
-        boolean valid = UpdateSnowDepth.newSnowDataValid(110, 110, 0.2, 0.2);
+        UpdateSnowDepth updateSnowDepth = new UpdateSnowDepth("CO", 13.37, 0.238);
+        boolean valid = updateSnowDepth.newSnowDataValid(110, 110, 0.2);
         assertFalse("Sanity check", valid);
     }
 
     @Test
     public void correctedSnowValid() {
-        boolean valid = UpdateSnowDepth.newSnowDataValid(15, 170, 3.5, 3.6);
+        UpdateSnowDepth updateSnowDepth = new UpdateSnowDepth("CO", 13.37, 0.238);
+        boolean valid = updateSnowDepth.newSnowDataValid(15, 170, 3.5);
         assertTrue("Corrected snow", valid);
     }
 

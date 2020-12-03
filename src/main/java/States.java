@@ -1,6 +1,7 @@
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.URISyntaxException;
 import java.sql.*;
 
 import java.util.*;
@@ -41,6 +42,22 @@ public class States extends APIHeader{
     public States() {
         this.requestVersion = 1;
         this.requestType = "states";
+    }
+
+    static List<String> getAllStates() throws URISyntaxException, SQLException {
+        ArrayList<String> states = new ArrayList<>();
+        String query = "SELECT state FROM states";
+
+        try (
+            Connection conn = WebApplication.getDBConnection();
+            Statement stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery(query);
+        ) {
+            while(rs.next()) {
+                states.add(rs.getString("state"));
+            }
+        }
+        return states;
     }
 
     private void setStationCount(Connection conn) throws SQLException {

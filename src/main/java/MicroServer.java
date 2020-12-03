@@ -9,10 +9,8 @@ import java.io.IOException;
 import java.lang.reflect.Type;
 import java.net.URISyntaxException;
 import java.sql.SQLException;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
 
 public class MicroServer {
     private final Logger log = LoggerFactory.getLogger(MicroServer.class);
@@ -46,6 +44,8 @@ public class MicroServer {
         Spark.get("api/count", this::processCountRequest);
         Spark.get("api/map/ski-areas", this::processSkiAreaMapRequest);
         Spark.get("api/map/backcountry", this::processStationsMapRequest);
+        Spark.patch("api/averageSnowDepth", this::processAverageSnowDepthRequest);
+        Spark.patch("api/averageSnowDensity", this::processAverageSnowDensityRequest);
     }
 
     private String processConfigRequest(Request request, Response response) {
@@ -112,6 +112,14 @@ public class MicroServer {
             new LocationMap(request.queryParams("state"), State.Table.backcountry),
             request, response
         );
+    }
+
+    private String processAverageSnowDepthRequest(Request request, Response response) {
+        return processGetRequest(new SnowDepth(), request, response);
+    }
+
+    private String processAverageSnowDensityRequest(Request request, Response response) {
+        return processGetRequest(new SnowDensity(), request, response);
     }
 
     private String processGetRequest(APIHeader requestType, Request request, Response response) {
